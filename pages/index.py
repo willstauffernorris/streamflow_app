@@ -8,6 +8,9 @@ import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
+import requests
+from datetime import datetime  
+from datetime import timedelta
 
 # Imports from this application
 from app import app
@@ -75,28 +78,52 @@ column1 = dbc.Col(
 )
 
 
-gapminder = px.data.gapminder()
-fig = px.scatter(gapminder.query("year==2007"), x="gdpPercap", y="lifeExp", size="pop", color="continent",
-           hover_name="country", log_x=True, size_max=60)
+# gapminder = px.data.gapminder()
+# fig = px.scatter(gapminder.query("year==2007"), x="gdpPercap", y="lifeExp", size="pop", color="continent",
+#            hover_name="country", log_x=True, size_max=60)
 
+response = requests.get("https://waterservices.usgs.gov/nwis/iv/?format=json&sites=13235000&period=P10D&parameterCd=00060&siteStatus=all")
+# print(response.status_code)
+# print(response.json())
+the_payload = response.json()
 
+prev_flow_df = pd.DataFrame({'cfs': [],
+                   'date': []})
+
+for i in range(len(the_payload['value']['timeSeries'][0]['values'][0]['value'])):
+  # value (CFS)
+  cfs = int(the_payload['value']['timeSeries'][0]['values'][0]['value'][i]['value'])
+  # print(cfs)
+  date = the_payload['value']['timeSeries'][0]['values'][0]['value'][i]['dateTime']
+  date = pd.to_datetime(date)
+  # print(date)
+  new_row = {'Observation':cfs, 'date':date}
+  prev_flow_df = prev_flow_df.append(new_row, ignore_index=True)
 
 d = {
-    'date': ['2020-09-04','2020-09-05','2020-09-06','2020-09-07', '2020-09-08','2020-09-09','2020-09-10','2020-09-11','2020-09-12','2020-09-13','2020-09-14','2020-09-15','2020-09-16','2020-09-17','2020-09-18','2020-09-19','2020-09-20','2020-09-21','2020-09-22','2020-09-23','2020-09-24','2020-09-25'],
-    'Observation': [364,364,364,364,365,369,366,362,358,358,361,np.nan, np.nan, np.nan,np.nan,np.nan,np.nan,np.nan,np.nan,np.nan,np.nan,np.nan],
-    'Forecast': [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, 361, 359, 355, 350, 350, 350, 390, 350, 350, 350, 350,350]
+    'Forecast': [359, 355, 350, 350, 350, 390, 350, 350, 350, 350,350],
+    'date': ['2020-09-15','2020-09-16','2020-09-17','2020-09-18','2020-09-19','2020-09-20','2020-09-21','2020-09-22','2020-09-23','2020-09-24','2020-09-25'],
      }
 df = pd.DataFrame(data=d)
 
+df['date'] = pd.to_datetime(df['date'])
+
+prev_flow_df = prev_flow_df.append(df, ignore_index=True)
 
 fig = px.line(
-                df,
+                prev_flow_df,
                 x='date',
                 y=['Observation','Forecast'],
-                line_shape='spline',
+                # line_shape='spline',
+                # line_shape='linear'
                 
                 
             )
+# fig2 = px.line(prev_flow_df,
+# x='date',
+# y='cfs')
+
+# fig.add_trace(fig2.data[0])
 
 # Add image
 fig.add_layout_image(
@@ -107,7 +134,7 @@ fig.add_layout_image(
         sizex=0.3, sizey=0.3,
         xanchor="left",
         yanchor="top",
-        opacity=0.6,
+        opacity=0.5,
         layer="below"
     )
 )
@@ -175,7 +202,7 @@ fig.update_yaxes(showline=True, linewidth=1, linecolor='black', mirror=True)
 # fig.add_trace(go.Scatter(x=[-100,400],y= [400,400],fill='tozeroy'),row=1, col=1)
 
 fig.add_annotation(
-            x='2020-09-16',
+            x=datetime.now() + timedelta(days=1.5),
             y=200,
             text="1-3 Day <br> Forecast")
 fig.add_annotation(
@@ -222,9 +249,9 @@ fig.update_layout(
             xref="x",
             # y-reference is assigned to the plot paper [0,1]
             yref="paper",
-            x0='2020-09-14',
+            x0=datetime.now(),
             y0=0,
-            x1='2020-09-18',
+            x1=datetime.now() + timedelta(days=3),
             y1=1,
             fillcolor="LightGreen",
             opacity=0.2,
@@ -238,9 +265,9 @@ fig.update_layout(
             xref="x",
             # y-reference is assigned to the plot paper [0,1]
             yref="paper",
-            x0='2020-09-18',
+            x0=datetime.now() + timedelta(days=3),
             y0=0,
-            x1='2020-09-25',
+            x1=datetime.now() + timedelta(days=10),
             y1=1,
             fillcolor="LightPink",
             opacity=0.2,
@@ -270,7 +297,9 @@ fig.update_layout(
     xaxis_tickformat = '%d'
 )
 
-fig.update_xaxes(nticks=len(df['date']))
+# fig.update_xaxes(nticks=len(df['date']))
+fig.update_xaxes(nticks=21)
+
 
 
 
@@ -302,10 +331,10 @@ column2 = dbc.Col(
         ),
 
         ## This is the live link
-        # html.Img(src='https://www.nwrfc.noaa.gov/station/flowplot/hydroPlot.php?id=PRLI1&pe=HG&v=1599087455/hydroPlot.png', className='img-fluid'),
+        html.Img(src='https://www.nwrfc.noaa.gov/station/flowplot/hydroPlot.php?id=PRLI1&pe=HG&v=1599087455/hydroPlot.png', className='img-fluid'),
 
         ## Placeholder image
-        html.Img(src='/assets/hydroPlot.png', className='img-fluid'),
+        # html.Img(src='/assets/hydroPlot.png', className='img-fluid'),
     ]
 )
 

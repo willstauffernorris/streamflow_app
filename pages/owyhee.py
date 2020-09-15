@@ -9,12 +9,13 @@ import pandas as pd
 
 # Imports from this application
 from app import app
-from functions import build_plotly_graph
-from functions import build_prev_flow_dataframe
-from functions import river_dict
+# from functions import build_plotly_graph
+# from functions import build_prev_flow_dataframe
+# from functions import river_dict
+from functions import *
 
-
-prev_flow_df = build_prev_flow_dataframe(river_dict['Owyhee at Rome'])
+weather_forecast_df = get_weather_forecast(river_dict['Owyhee at Rome'][1])
+prev_flow_df = build_prev_flow_dataframe(river_dict['Owyhee at Rome'][0])
 
 forecast_data = {
     'Forecast': [100, 110, 120, 110, 110, 120, 130, 90, 95,100],
@@ -41,6 +42,28 @@ column1 = dbc.Col(
 
 column2 = dbc.Col(
     [
+
+
+
+        dcc.Markdown(
+            f"""
+            Near Owyhee, NV
+            ## Today's weather: {weather_forecast_df['shortForecast'][0]}
+
+            High: {weather_forecast_df['max_temp'][0].round(0)}ºF
+
+            """
+        ),
+
+
+        html.Img(src=weather_forecast_df['icon_url'][0], className='img-fluid'),
+        
+                dcc.Markdown(
+            """
+            ----
+            """
+        ),
+
         dcc.Markdown(
             """
     

@@ -8,11 +8,31 @@ from sklearn.ensemble import RandomForestRegressor
 
 
 ## Eventually, in order to make more graphs, I'll build out this structure
+
+
+# Weather.gov API documentation
+# https://www.weather.gov/documentation/services-web-api
 river_dict = {
 
-    'South Fork Payette at Lowman': 'https://waterservices.usgs.gov/nwis/iv/?format=json&sites=13235000&period=P10D&parameterCd=00060&siteStatus=all',
-    'Owyhee at Rome':'https://waterservices.usgs.gov/nwis/iv/?format=json&sites=13181000&period=P10D&parameterCd=00060&siteStatus=all'
+    'South Fork Payette at Lowman': ('https://waterservices.usgs.gov/nwis/iv/?format=json&sites=13235000&period=P10D&parameterCd=00060&siteStatus=all',
+                                    "https://api.weather.gov/gridpoints/BOI/169,112/forecast"),
+    'Owyhee at Rome':('https://waterservices.usgs.gov/nwis/iv/?format=json&sites=13181000&period=P10D&parameterCd=00060&siteStatus=all',
+                    'https://api.weather.gov/gridpoints/LKN/117,175/forecast')  #Fawn Creek Snotel
 }
+
+
+def generate_2_7_day_prediction(prediction_df, weather_forecast_df):
+
+    for i in range(2,7):
+        current_flow = prediction_df['Forecast'].iloc[-1]
+        model_inputs = build_1_day_model_inputs(weather_forecast_df, current_flow, days_ahead=i)
+        forecast = generate_1_day_prediction(model_inputs)
+        new_row = {'Forecast':forecast, 'date':datetime.now() + timedelta(days=i)}
+        prediction_df = prediction_df.append(new_row, ignore_index=True)
+    prediction_df['date'] = pd.to_datetime(prediction_df['date'])
+
+    return prediction_df
+
 
 
 def generate_1_day_prediction(input_array):
@@ -23,15 +43,8 @@ def generate_1_day_prediction(input_array):
 
     return flow_prediction[0]
 
-# def build_sketchy_forecast_inputs(max_temp, min_temp, day_of_year,prev_day_flow):
 
-
-#     [max_temp, ]
-#     pass
-
-
-
-def build_1_day_model_inputs(future_weather_dataframe, previous_flow_dataframe):
+def build_1_day_model_inputs(future_weather_df, current_flow, days_ahead):
 
     '''
     These are the inputs needed to calculate the next days' flow forecast
@@ -42,15 +55,18 @@ def build_1_day_model_inputs(future_weather_dataframe, previous_flow_dataframe):
     # random forest model inputs
     #['TMAX','TMIN','DAY_OF_YEAR','STREAMFLOW']
 
+
+    tomorrows_forecast = future_weather_df[future_weather_df['date']==pd.to_datetime(str(datetime.now()+ timedelta(days=days_ahead))[:10])]
+
     day_of_year = datetime.now().timetuple().tm_yday
 
     # print(previous_flow_dataframe['cfs'][:-1])
 
     input_array = [
-                    future_weather_dataframe['max_temp'][1],
-                    future_weather_dataframe['min_temp'][1],
-                    day_of_year+1,
-                    previous_flow_dataframe['Observation'].iloc[-1]
+                    tomorrows_forecast['max_temp'],
+                    tomorrows_forecast['min_temp'],
+                    day_of_year+days_ahead,
+                    current_flow
                     ]
     
     return [input_array]
@@ -80,9 +96,9 @@ def build_prev_flow_dataframe(river):
 
 # https://api.weather.gov/gridpoints/BOI/169,112/forecast
 
-def get_weather_forecast():
+def get_weather_forecast(weather_gov_api_url):
 
-    response = requests.get("https://api.weather.gov/gridpoints/BOI/169,112/forecast")
+    response = requests.get(weather_gov_api_url)
     payload = response.json()
     
     # building two empty dataframes
@@ -140,7 +156,7 @@ def build_plotly_graph(dataframe, title, x, y):
             source="/assets/circle-cropped.png",
             xref="paper", yref="paper",
             x=0.04, y=0.92,
-            sizex=0.3, sizey=0.3,
+            sizex=0.25, sizey=0.25,
             xanchor="left",
             yanchor="top",
             opacity=0.5,
@@ -197,7 +213,7 @@ def build_plotly_graph(dataframe, title, x, y):
     fig.add_annotation(
                 x='2020-09-22',
                 y=200,
-                text="4-10 Day <br> Forecast")
+                text="4-7 Day <br> Forecast")
     fig.update_annotations(dict(
                 xref="x",
                 yref="y",

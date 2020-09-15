@@ -14,65 +14,31 @@ from datetime import timedelta
 
 # Imports from this application
 from app import app
-from functions import build_plotly_graph
-from functions import build_prev_flow_dataframe
-from functions import river_dict
-from functions import get_weather_forecast
-from functions import build_1_day_model_inputs
-from functions import generate_1_day_prediction
+from functions import *
 
 
 
 
-weather_forecast_df = get_weather_forecast()
+weather_forecast_df = get_weather_forecast(river_dict['South Fork Payette at Lowman'][1])
+prev_flow_df = build_prev_flow_dataframe(river_dict['South Fork Payette at Lowman'][0])
 
-# print(pd.to_datetime(str(datetime.now()+ timedelta(days=1))[:10]))
-# print(weather_forecast_df['date'][0])
-# print(type(weather_forecast_df['date'][0]))
+current_flow = prev_flow_df['Observation'].iloc[-1]
 
-# print(pd.to_datetime(str(datetime.now())[:10])==weather_forecast_df['date'][0])
+model_inputs = build_1_day_model_inputs(weather_forecast_df, current_flow, days_ahead=1)
 
-tomorrows_forecast = weather_forecast_df[weather_forecast_df['date']==pd.to_datetime(str(datetime.now()+ timedelta(days=1))[:10])]
-# print(tomorrows_forecast['max_temp'].values[0])
-# exit()
-
-
-
-
-prev_flow_df = build_prev_flow_dataframe(river_dict['South Fork Payette at Lowman'])
-
-
-
-model_inputs = build_1_day_model_inputs(weather_forecast_df, prev_flow_df)
-
-# print(model_inputs)
 one_day_forecast = generate_1_day_prediction(model_inputs)
 
-# model_inputs = build_1_day_model_inputs(weather_forecast_df, prev_flow_df)
-# two_day_forecast = generate_1_day_prediction()
-
-# print(one_day_forecast)
-
-
-tomorrow_inputs = [[
-                tomorrows_forecast['max_temp'],
-                tomorrows_forecast['min_temp'], 
-                datetime.now().timetuple().tm_yday+2,
-                one_day_forecast
-                ]]
-
-two_day_forecast = generate_1_day_prediction(tomorrow_inputs)
-
-
+## Create forecast dataframe
 forecast_data = {
-    'Forecast': [prev_flow_df['Observation'].iloc[-1], one_day_forecast, two_day_forecast],
-    'date': [datetime.now(), datetime.now() + timedelta(days=1), datetime.now() + timedelta(days=2)]
+    'Forecast': [current_flow, one_day_forecast],
+    'date': [datetime.now(), datetime.now() + timedelta(days=1)]
      }
 df = pd.DataFrame(data=forecast_data)
 
-df['date'] = pd.to_datetime(df['date'])
+two_seven_day_forecast = generate_2_7_day_prediction(df, weather_forecast_df)
 
-prev_flow_df = prev_flow_df.append(df, ignore_index=True)
+
+prev_flow_df = prev_flow_df.append(two_seven_day_forecast, ignore_index=True)
 
 fig = build_plotly_graph(prev_flow_df, title='South Fork Payette at Lowman', x='date', y=['Observation','Forecast'])
 
@@ -81,14 +47,17 @@ fig = build_plotly_graph(prev_flow_df, title='South Fork Payette at Lowman', x='
 # https://dash-bootstrap-components.opensource.faculty.ai/l/components/layout
 column1 = dbc.Col(
     [
-        dcc.Markdown(
-            """
-        
-            ## Will's model: live prediction
-            """
-        ),
+
         
         dcc.Graph(figure=fig, style={"border":"1px black solid", 'padding': 0}),
+
+        dcc.Markdown(
+            f"""
+            Forecast created {str(datetime.now())[:16]} MST
+            ### Will's model ☝️
+            
+            """
+        ),
 
         dcc.Markdown(
             """
@@ -97,15 +66,18 @@ column1 = dbc.Col(
         ),
 
         # html.Div(children=[dcc.Graph(figure=fig)], style={"border":"2px black solid"})
-        dcc.Markdown(
-            """
-        
-            ## The NWRFC model: live prediction
-            """
-        ),
+
 
         ## This is the live link
         html.Img(src='https://www.nwrfc.noaa.gov/station/flowplot/hydroPlot.php?id=PRLI1&pe=HG&v=1599087455/hydroPlot.png', className='img-fluid'),
+    
+        dcc.Markdown(
+            """
+        
+            ### Northwest River Forecast Center model ☝️
+            """
+        ),   
+    
     ]
 )
 
@@ -117,7 +89,7 @@ column2 = dbc.Col(
 
         dcc.Markdown(
             f"""
-        
+            Banner Summit, ID
             ## Today's weather: {weather_forecast_df['shortForecast'][0]}
 
             High: {weather_forecast_df['max_temp'][0].round(0)}ºF
@@ -168,15 +140,15 @@ column2 = dbc.Col(
 
         dcc.Markdown(
             """
-            ## Coming soon:
+            ### Coming soon:
 
-            - Live model
+            - Integrations with precipitation data
 
-            - Integrations with weather forecasts
+            - Neural network model
 
-            - Incorporating Google Earth Engine data
+            - Incorporating Google Earth Engine data into model
 
-            ## Coming later:
+            ### Coming later:
 
             - Owyhee River at Rome, OR forecast (not currently served by NWRFC)
 

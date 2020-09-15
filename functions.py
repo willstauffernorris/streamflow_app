@@ -3,7 +3,8 @@ from datetime import datetime
 from datetime import timedelta
 import requests
 import pandas as pd
-
+import joblib
+from sklearn.ensemble import RandomForestRegressor
 
 
 ## Eventually, in order to make more graphs, I'll build out this structure
@@ -13,6 +14,46 @@ river_dict = {
     'Owyhee at Rome':'https://waterservices.usgs.gov/nwis/iv/?format=json&sites=13181000&period=P10D&parameterCd=00060&siteStatus=all'
 }
 
+
+def generate_1_day_prediction(input_array):
+
+    model = joblib.load("data/random_forest_model.joblib")
+
+    flow_prediction = model.predict(input_array)
+
+    return flow_prediction[0]
+
+# def build_sketchy_forecast_inputs(max_temp, min_temp, day_of_year,prev_day_flow):
+
+
+#     [max_temp, ]
+#     pass
+
+
+
+def build_1_day_model_inputs(future_weather_dataframe, previous_flow_dataframe):
+
+    '''
+    These are the inputs needed to calculate the next days' flow forecast
+
+    Returns array [['TMAX','TMIN','DAY_OF_YEAR','STREAMFLOW']]
+    '''
+
+    # random forest model inputs
+    #['TMAX','TMIN','DAY_OF_YEAR','STREAMFLOW']
+
+    day_of_year = datetime.now().timetuple().tm_yday
+
+    # print(previous_flow_dataframe['cfs'][:-1])
+
+    input_array = [
+                    future_weather_dataframe['max_temp'][1],
+                    future_weather_dataframe['min_temp'][1],
+                    day_of_year+1,
+                    previous_flow_dataframe['Observation'].iloc[-1]
+                    ]
+    
+    return [input_array]
 
 
 

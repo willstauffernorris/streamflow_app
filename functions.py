@@ -37,6 +37,41 @@ def build_prev_flow_dataframe(river):
     return prev_flow_df
 
 
+# https://api.weather.gov/gridpoints/BOI/169,112/forecast
+
+def get_weather_forecast():
+
+    response = requests.get("https://api.weather.gov/gridpoints/BOI/169,112/forecast")
+    payload = response.json()
+    
+    # building two empty dataframes
+    future_max_temp_df = pd.DataFrame({
+                    'max_temp':[],
+                    'icon_url':[],
+                    'shortForecast':[],
+                   'date': []})
+
+    future_min_temp_df = pd.DataFrame({
+                    'min_temp':[],
+                   'date': []})
+
+    for i in range(len(payload['properties']['periods'])):
+        date = pd.to_datetime(payload['properties']['periods'][i]['endTime'][:10])
+        icon_url = payload['properties']['periods'][i]['icon']
+        shortForecast = payload['properties']['periods'][i]['shortForecast']
+        # print(payload['properties']['periods'][i])
+        if payload['properties']['periods'][i]['isDaytime'] == True:
+            max_temp = payload['properties']['periods'][i]['temperature']
+            new_row = {'max_temp': max_temp, 'icon_url':icon_url,'shortForecast':shortForecast,'date':date}
+            future_max_temp_df = future_max_temp_df.append(new_row, ignore_index=True)
+        else:
+            min_temp = payload['properties']['periods'][i]['temperature']
+            new_row = {'min_temp': min_temp, 'date':date}
+            future_min_temp_df = future_min_temp_df.append(new_row, ignore_index=True)
+    future_temp_df = future_max_temp_df.merge(future_min_temp_df, on='date', how='outer')
+    
+    
+    return future_temp_df
 
 
 
@@ -55,6 +90,7 @@ def build_plotly_graph(dataframe, title, x, y):
                     y=y,
                     # line_shape='spline',
                     # line_shape='linear'
+                    # width=700
                 )
 
     # Add image

@@ -17,7 +17,9 @@ from app import app
 from functions import build_plotly_graph
 from functions import build_prev_flow_dataframe
 from functions import river_dict
+from functions import get_weather_forecast
 
+weather_forecast_df = get_weather_forecast()
 
 prev_flow_df = build_prev_flow_dataframe(river_dict['South Fork Payette at Lowman'])
 
@@ -69,6 +71,28 @@ column1 = dbc.Col(
 
 column2 = dbc.Col(
     [
+
+
+
+        dcc.Markdown(
+            f"""
+        
+            ## Today's weather: {weather_forecast_df['shortForecast'][0]}
+
+            High: {weather_forecast_df['max_temp'][0].round(0)}ºF
+
+            """
+        ),
+
+
+        html.Img(src=weather_forecast_df['icon_url'][0], className='img-fluid'),
+        
+                dcc.Markdown(
+            """
+            ----
+            """
+        ),
+        
         dcc.Markdown(
             """
         

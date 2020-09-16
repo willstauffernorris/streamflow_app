@@ -145,7 +145,7 @@ def build_plotly_graph(dataframe, title, x, y):
                     dataframe,
                     x=x,
                     y=y,
-                    line_shape='hvh',
+                    # line_shape='hvh',
                     # line_shape='linear'
                     # width=700
                 )

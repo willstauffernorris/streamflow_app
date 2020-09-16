@@ -38,10 +38,18 @@ df = pd.DataFrame(data=forecast_data)
 
 # two_seven_day_forecast = generate_2_7_day_prediction(df, weather_forecast_df)
 
+two_seven_day_forecast = {
+    'Forecast': [355,352.15, 348.7, 345.95, 375.85, 368.8, 364.2],
+    'date': ['2020-09-16','2020-09-17','2020-09-18','2020-09-19','2020-09-20','2020-09-21','2020-09-22'],
+     }
+two_seven_day_forecast = pd.DataFrame(data=two_seven_day_forecast)
+# two_seven_day_forecast = two_seven_day_forecast.append(df, ignore_index=True)
 
-# prev_flow_df = prev_flow_df.append(two_seven_day_forecast, ignore_index=True)
-prev_flow_df = prev_flow_df.append(df, ignore_index=True)
+prev_flow_df = prev_flow_df.append(two_seven_day_forecast, ignore_index=True)
+# prev_flow_df = prev_flow_df.append(df, ignore_index=True)
 
+forecast_list = prev_flow_df['date'].tail(7).tolist()
+# print(forecast_list)
 
 
 fig = build_plotly_graph(

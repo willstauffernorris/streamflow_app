@@ -21,27 +21,27 @@ river_dict = {
 }
 
 
-# def generate_2_7_day_prediction(prediction_df, weather_forecast_df):
+def generate_2_7_day_prediction(prediction_df, weather_forecast_df):
 
-#     for i in range(2,7):
-#         current_flow = prediction_df['Forecast'].iloc[-1]
-#         model_inputs = build_1_day_model_inputs(weather_forecast_df, current_flow, days_ahead=i)
-#         forecast = generate_1_day_prediction(model_inputs)
-#         new_row = {'Forecast':forecast, 'date':datetime.now() + timedelta(days=i)}
-#         prediction_df = prediction_df.append(new_row, ignore_index=True)
-#     prediction_df['date'] = pd.to_datetime(prediction_df['date'])
+    for i in range(2,7):
+        current_flow = prediction_df['Forecast'].iloc[-1]
+        model_inputs = build_1_day_model_inputs(weather_forecast_df, current_flow, days_ahead=i)
+        forecast = generate_1_day_prediction(model_inputs)
+        new_row = {'Forecast':forecast, 'date':datetime.now() + timedelta(days=i)}
+        prediction_df = prediction_df.append(new_row, ignore_index=True)
+    prediction_df['date'] = pd.to_datetime(prediction_df['date'])
 
-#     return prediction_df
+    return prediction_df
 
 
 
-# def generate_1_day_prediction(input_array):
+def generate_1_day_prediction(input_array):
 
-#     model = joblib.load("data/random_forest_model.joblib")
+    model = joblib.load("data/random_forest_model.joblib")
 
-#     flow_prediction = model.predict(input_array)
+    flow_prediction = model.predict(input_array)
 
-#     return flow_prediction[0]
+    return flow_prediction[0]
 
 
 def build_1_day_model_inputs(future_weather_df, current_flow, days_ahead):

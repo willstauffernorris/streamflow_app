@@ -27,7 +27,7 @@ current_flow = prev_flow_df['Observation'].iloc[-1]
 
 model_inputs = build_1_day_model_inputs(weather_forecast_df, current_flow, days_ahead=1)
 
-# one_day_forecast = generate_1_day_prediction(model_inputs)
+one_day_forecast = generate_1_day_prediction(model_inputs)
 one_day_forecast = current_flow
 
 ## Create forecast dataframe

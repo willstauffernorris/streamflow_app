@@ -310,7 +310,7 @@
                 "sha256:da8e7c302003dd765d92a5616678e591f347460ac7b53e53d667be7dfe6d1b10",
                 "sha256:daf276c465c38ef736a79bd79fc80a249f746bcbcae50c40945428f7ece074f8"
             ],
-            "version": "==0.22.2.post1"
+            "version": "==0.23.2"
         },
         "scipy": {
             "hashes": [

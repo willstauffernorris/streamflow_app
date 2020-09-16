@@ -13,7 +13,7 @@ plotly = "*"
 pandas = "*"
 requests = "*"
 joblib = "*"
-sklearn = "==0.22.2.post1"
+sklearn = "*"
 
 [requires]
 python_version = "3"

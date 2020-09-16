@@ -4,7 +4,11 @@ from datetime import timedelta
 import requests
 import pandas as pd
 import joblib
+from joblib import load
 from sklearn.ensemble import RandomForestRegressor
+from numpy import concatenate
+import numpy as np
+from tensorflow import keras
 
 
 ## Eventually, in order to make more graphs, I'll build out this structure
@@ -19,6 +23,69 @@ river_dict = {
     'Owyhee at Rome':('https://waterservices.usgs.gov/nwis/iv/?format=json&sites=13181000&period=P10D&parameterCd=00060&siteStatus=all',
                     'https://api.weather.gov/gridpoints/LKN/117,175/forecast')  #Fawn Creek Snotel
 }
+
+
+def build_LSTM_1_day_model_inputs(future_weather_df, current_flow, days_ahead):
+
+    '''
+    These are the inputs needed to calculate the next days' flow forecast
+
+    Returns array [['TMAX','TMIN','DAY_OF_YEAR','STREAMFLOW']]
+    '''
+
+    # random forest model inputs
+    #['TMAX','TMIN','DAY_OF_YEAR','STREAMFLOW']
+
+
+    tomorrows_forecast = future_weather_df[future_weather_df['date']==pd.to_datetime(str(datetime.now()+ timedelta(days=days_ahead))[:10])]
+
+    day_of_year = datetime.now().timetuple().tm_yday
+
+    # print(previous_flow_dataframe['cfs'][:-1])
+
+    input_array = [
+                    current_flow,
+                    tomorrows_forecast['max_temp'],
+                    tomorrows_forecast['min_temp'],
+                    day_of_year+days_ahead,
+                    ]
+    
+    return input_array
+
+
+
+def LSTM_prediction(array_of_inputs):
+
+    ## Import the saved model
+    model = keras.models.load_model("data/LSTM_model.h5")
+  
+    ## notice the extra brackets as I make it an array
+    array_of_inputs = np.array([array_of_inputs])
+    # ensure all data is float
+    array_of_inputs = array_of_inputs.astype('float32')
+
+    scaler=load('data/std_scaler.bin')
+    # normalize features
+    # scaler = MinMaxScaler(feature_range=(0, 1))
+    scaled = scaler.transform(array_of_inputs)
+
+    test_X = scaled.reshape((scaled.shape[0], 1, scaled.shape[1]))
+
+    # print(test_X)
+
+    yhat = model.predict(test_X)
+
+    test_X = test_X.reshape((test_X.shape[0], test_X.shape[2]))
+    # invert scaling for forecast
+    inv_yhat = concatenate((yhat, test_X[:, 1:]), axis=1)
+    inv_yhat = scaler.inverse_transform(inv_yhat)
+    # print(inv_yhat)
+    inv_yhat = inv_yhat[:,0]
+
+    #### MY FINAL PREDICTION!!!!!!
+    return inv_yhat[0]
+
+
 
 
 def generate_2_7_day_prediction(prediction_df, weather_forecast_df):

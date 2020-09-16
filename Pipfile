@@ -14,6 +14,8 @@ pandas = "*"
 requests = "*"
 joblib = "*"
 sklearn = "*"
+tensorflow = "*"
+numpy = "*"
 
 [requires]
 python_version = "3"

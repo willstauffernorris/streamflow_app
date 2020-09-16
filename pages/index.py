@@ -35,10 +35,13 @@ forecast_data = {
      }
 df = pd.DataFrame(data=forecast_data)
 
-two_seven_day_forecast = generate_2_7_day_prediction(df, weather_forecast_df)
+# two_seven_day_forecast = generate_2_7_day_prediction(df, weather_forecast_df)
 
 
-prev_flow_df = prev_flow_df.append(two_seven_day_forecast, ignore_index=True)
+# prev_flow_df = prev_flow_df.append(two_seven_day_forecast, ignore_index=True)
+prev_flow_df = prev_flow_df.append(df, ignore_index=True)
+
+
 
 fig = build_plotly_graph(
                         prev_flow_df,

@@ -35,13 +35,13 @@ river_dict = {
 
 
 
-def generate_1_day_prediction(input_array):
+# def generate_1_day_prediction(input_array):
 
-    model = joblib.load("data/random_forest_model.joblib")
+#     model = joblib.load("data/random_forest_model.joblib")
 
-    flow_prediction = model.predict(input_array)
+#     flow_prediction = model.predict(input_array)
 
-    return flow_prediction[0]
+#     return flow_prediction[0]
 
 
 def build_1_day_model_inputs(future_weather_df, current_flow, days_ahead):

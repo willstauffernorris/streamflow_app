@@ -8,6 +8,7 @@ from dash.dependencies import Input, Output
 # import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
+import resource
 # import requests
 from datetime import datetime  
 from datetime import timedelta
@@ -186,3 +187,30 @@ column2 = dbc.Col(
 
 
 layout = dbc.Row([column1, column2])
+
+
+
+
+## Resource usage
+peak_memory_usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+print(f'This app is using {(peak_memory_usage/1000000):.2f}MB max')
+
+time_in_user_mode = resource.getrusage(resource.RUSAGE_SELF).ru_utime
+print(f'This app takes {(time_in_user_mode):.2f} seconds to run')
+
+shared_memory_size = resource.getrusage(resource.RUSAGE_SELF).ru_ixrss
+print(f'This app is using {(peak_memory_usage/1000000):.2f}MB shared memory')
+
+# #!/usr/bin/env python
+# import psutil
+# # gives a single float value
+# print(f'single float value {psutil.cpu_percent()}')
+# # gives an object with many fields
+# print(f'object with many fields{psutil.virtual_memory()}')
+# # you can convert that object to a dictionary 
+# print(dict(psutil.virtual_memory()._asdict()))
+# # you can have the percentage of used RAM
+# print(psutil.virtual_memory().percent)
+
+# # you can calculate percentage of available memory
+# print(psutil.virtual_memory().available * 100 / psutil.virtual_memory().total)

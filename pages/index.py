@@ -40,7 +40,12 @@ two_seven_day_forecast = generate_2_7_day_prediction(df, weather_forecast_df)
 
 prev_flow_df = prev_flow_df.append(two_seven_day_forecast, ignore_index=True)
 
-fig = build_plotly_graph(prev_flow_df, title='South Fork Payette at Lowman', x='date', y=['Observation','Forecast'])
+fig = build_plotly_graph(
+                        prev_flow_df,
+                        title='South Fork Payette at Lowman',
+                        x='date',
+                        y=['Observation','Forecast']
+                        )
 
 
 # 2 column layout. 1st column width = 4/12
@@ -90,7 +95,7 @@ column2 = dbc.Col(
         dcc.Markdown(
             f"""
             Banner Summit, ID
-            ## Today's weather: {weather_forecast_df['shortForecast'][0]}
+            ### Today's weather: {weather_forecast_df['shortForecast'][0]}
 
             High: {weather_forecast_df['max_temp'][0].round(0)}ºF
 
@@ -106,51 +111,50 @@ column2 = dbc.Col(
             """
         ),
 
+        
+
+        # dcc.Markdown(
+        #     """
+        #     ----
+        #     """
+        # ),
+
+
+        
+
+
         dcc.Markdown(
             """
         
-            ## What's the future flow of the river?
+            ## **River Prediction**
 
-            This website uses machine learning to predict a river's flow.
-
-            Predictions are made up, for now.
-
-            Read more about how the model was created here:
-
-            https://towardsdatascience.com/predicting-the-flow-of-the-south-fork-payette-river-using-an-lstm-neural-network-65292eadf6a6
+            This website uses machine learning to predict a river's flow. 
+            Read more about how the model was created [here.](https://towardsdatascience.com/predicting-the-flow-of-the-south-fork-payette-river-using-an-lstm-neural-network-65292eadf6a6)
 
 
             """
         ),
 
-        dcc.Markdown(
-            """
-            ----
-            """
-        ),
-
-
-        html.Img(src='/assets/rockwater.jpg', className='img-fluid'),
-
-        dcc.Markdown(
-            """
-            ----
-            """
-        ),
+        # dcc.Markdown(
+        #     """
+        #     ----
+        #     """
+        # ),
 
         dcc.Markdown(
             """
             ### Coming soon:
 
+            - Owyhee River at Rome, OR forecast (not currently served by NWRFC)
+
             - Integrations with precipitation data
 
             - Neural network model
-
-            - Incorporating Google Earth Engine data into model
+            
 
             ### Coming later:
 
-            - Owyhee River at Rome, OR forecast (not currently served by NWRFC)
+            - Incorporating Google Earth Engine data into model
 
             - South Fork Salmon at Krassel, ID (not currently served by NWRFC)
 
@@ -161,6 +165,8 @@ column2 = dbc.Col(
 
             """
         ),
+
+        # html.Img(src='/assets/rockwater.jpg', className='img-fluid'),
         # dcc.Link(dbc.Button('Predict', color='primary'), href='/predictions')
     ],
     md=4,

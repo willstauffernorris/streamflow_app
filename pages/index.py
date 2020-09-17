@@ -4,7 +4,7 @@ import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
-# import plotly.express as px
+import plotly.express as px
 # import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
@@ -47,9 +47,10 @@ forecast_df = pd.DataFrame(data=forecast_data)
 
 # print(forecast_df)
 
-# forecast_df = forecast_df.append(generate_2_3_day_LSTM_prediction(forecast_df, weather_forecast_df), ignore_index=True)
 
-forecast_df = generate_2_3_day_LSTM_prediction(forecast_df, weather_forecast_df)
+
+## add another day of forecast on there
+# forecast_df = generate_2_3_day_LSTM_prediction(forecast_df, weather_forecast_df)
 
 
 # two_seven_day_forecast = generate_2_7_day_prediction(df, weather_forecast_df)
@@ -108,7 +109,7 @@ print(mapping_df)
 
 # exit()
 
-import plotly.express as px
+# import plotly.express as px
 
 map_fig = px.scatter_mapbox(mapping_df, lat="lat", lon="lon", hover_name="station", 
                             hover_data={"lat":False, "lon":False,"today's flow":True,"tomorrow's flow":True},

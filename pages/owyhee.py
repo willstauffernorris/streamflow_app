@@ -18,8 +18,8 @@ weather_forecast_df = get_weather_forecast(river_dict['Owyhee at Rome'][1])
 prev_flow_df = build_prev_flow_dataframe(river_dict['Owyhee at Rome'][0])
 
 forecast_data = {
-    'Forecast': [100, 110, 120, 110, 110, 120, 130, 90, 95,100],
-    'date': ['2020-09-16','2020-09-17','2020-09-18','2020-09-19','2020-09-20','2020-09-21','2020-09-22','2020-09-23','2020-09-24','2020-09-25'],
+    'Forecast': [120, 110, 110, 120, 130, 90, 95,100],
+    'date': ['2020-09-18','2020-09-19','2020-09-20','2020-09-21','2020-09-22','2020-09-23','2020-09-24','2020-09-25'],
      }
 df = pd.DataFrame(data=forecast_data)
 

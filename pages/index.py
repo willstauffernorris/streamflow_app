@@ -70,6 +70,8 @@ print(prev_flow_df)
 # print(forecast_list)
 
 
+
+
 fig = build_plotly_graph(
                         prev_flow_df,
                         title='South Fork Payette at Lowman',
@@ -78,12 +80,63 @@ fig = build_plotly_graph(
                         )
 
 
+
+
+
+
+# import pandas as pd
+# us_cities = pd.read_csv("https://raw.githubusercontent.com/plotly/datasets/master/us-cities-top-1k.csv")
+
+
+
+## This should get wrapped in a function
+
+### And I guess I need a global database to store all the current values of each river
+## This map generation should reference that database
+mapping_data = {
+    'lat': [42.838680, 44.082420],
+    'lon': [-117.629028,-115.613130],
+    'station':['Owyhee at Rome','SF Payette at Lowman'],
+    "today's flow":[-999,str(current_flow) + " CFS"],
+    "tomorrow's flow":[-999,str(one_day_forecast)+"CFS"]
+     }
+
+
+mapping_df = pd.DataFrame(data=mapping_data)
+
+print(mapping_df)
+
+# exit()
+
+import plotly.express as px
+
+map_fig = px.scatter_mapbox(mapping_df, lat="lat", lon="lon", hover_name="station", 
+                            hover_data={"lat":False, "lon":False,"today's flow":True,"tomorrow's flow":True},
+                        color_continuous_scale=px.colors.sequential.Blues, zoom=5, height=400)
+map_fig.update_layout(
+    mapbox_style="white-bg",
+    mapbox_layers=[
+        {
+            "below": 'traces',
+            "sourcetype": "raster",
+            "sourceattribution": "United States Geological Survey",
+            "source": [
+                "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}"
+            ]
+        }
+      ])
+map_fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+# map_fig.update_traces(hovertemplate=None)
+# map_fig.update_layout(hovermode="y")
+# fig.show()
+
+
 # 2 column layout. 1st column width = 4/12
 # https://dash-bootstrap-components.opensource.faculty.ai/l/components/layout
 column1 = dbc.Col(
     [
 
-        
+        dcc.Graph(figure=map_fig, style={"border":"1px black solid", 'padding': 0}),
         dcc.Graph(figure=fig, style={"border":"1px black solid", 'padding': 0}),
 
         dcc.Markdown(

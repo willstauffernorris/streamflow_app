@@ -28,38 +28,41 @@ model_inputs = build_1_day_model_inputs(weather_forecast_df, current_flow, days_
 
 LSTM_model_inputs = build_LSTM_1_day_model_inputs(weather_forecast_df, current_flow, days_ahead=1)
 
-# print(LSTM_model_inputs)
-
 # example_values = [2900,90,60,153]
-final_answer = LSTM_prediction(LSTM_model_inputs)
+one_day_forecast = LSTM_prediction(LSTM_model_inputs)
+print(f'NEURAL NETWORK PREDICTION: {one_day_forecast}')
 
-
-# final_answer = final_answer.round(2)
-print(f'NEURAL NETWORK PREDICTION: {final_answer}')
-
-
-
+## Random forest forecast
 # one_day_forecast = generate_1_day_prediction(model_inputs)
-one_day_forecast = current_flow
+
 
 ## Create forecast dataframe
 forecast_data = {
     'Forecast': [current_flow, one_day_forecast],
     'date': [datetime.now(), datetime.now() + timedelta(days=1)]
      }
-df = pd.DataFrame(data=forecast_data)
+forecast_df = pd.DataFrame(data=forecast_data)
+
+
+
+forecast_df = forecast_df.append(generate_2_3_day_LSTM_prediction(forecast_df, weather_forecast_df), ignore_index=True)
+
+
+
 
 # two_seven_day_forecast = generate_2_7_day_prediction(df, weather_forecast_df)
 
-two_seven_day_forecast = {
-    'Forecast': [360, 345.95, 375.85, 368.8, 364.2],
-    'date': ['2020-09-18','2020-09-19','2020-09-20','2020-09-21','2020-09-22'],
-     }
-two_seven_day_forecast = pd.DataFrame(data=two_seven_day_forecast)
-# two_seven_day_forecast = two_seven_day_forecast.append(df, ignore_index=True)
+# two_seven_day_forecast = {
+#     'Forecast': [345.95, 375.85, 368.8, 364.2],
+#     'date': ['2020-09-19','2020-09-20','2020-09-21','2020-09-22'],
+#      }
+# two_seven_day_forecast = pd.DataFrame(data=two_seven_day_forecast)
+# two_seven_day_forecast = two_seven_day_forecast.append(forecast_df, ignore_index=True)
+# prev_flow_df = prev_flow_df.append(two_seven_day_forecast, ignore_index=True)
 
-prev_flow_df = prev_flow_df.append(two_seven_day_forecast, ignore_index=True)
-# prev_flow_df = prev_flow_df.append(df, ignore_index=True)
+prev_flow_df = prev_flow_df.append(forecast_df, ignore_index=True)
+print(prev_flow_df)
+# exit()
 
 # forecast_list = prev_flow_df['date'].tail(7).tolist()
 # print(forecast_list)
@@ -137,12 +140,12 @@ column2 = dbc.Col(
         ),
 
                     
-
+ ### The Random Forest predicts that tomorrow's flow will be **{one_day_forecast}**.
 
         dcc.Markdown(
             f"""
-            ### The Random Forest predicts that tomorrow's flow will be **{one_day_forecast}**.
-            # The Neural Network predicts that tomorrow's flow will be **{final_answer}**.
+           
+            # The Neural Network predicts that tomorrow's flow will be **{one_day_forecast}**.
             ----
             """
         ),

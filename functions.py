@@ -26,6 +26,21 @@ river_dict = {
 }
 
 
+
+def generate_2_3_day_LSTM_prediction(prediction_df, weather_forecast_df):
+
+    for i in range(2,4):
+        current_flow = prediction_df['Forecast'].iloc[-1]
+        model_inputs = build_LSTM_1_day_model_inputs(weather_forecast_df, current_flow, days_ahead=i)
+        forecast = LSTM_prediction(model_inputs)
+        new_row = {'Forecast':forecast, 'date':datetime.now() + timedelta(days=i)}
+        prediction_df = prediction_df.append(new_row, ignore_index=True)
+    prediction_df['date'] = pd.to_datetime(prediction_df['date'])
+
+    return prediction_df
+
+
+
 def build_LSTM_1_day_model_inputs(future_weather_df, current_flow, days_ahead):
 
     '''

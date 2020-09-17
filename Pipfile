@@ -14,7 +14,7 @@ pandas = "*"
 requests = "*"
 joblib = "*"
 sklearn = "*"
-tensorflow = "*"
+tensorflow = "==1.15.2"
 numpy = "*"
 
 [requires]

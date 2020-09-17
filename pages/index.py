@@ -31,11 +31,11 @@ LSTM_model_inputs = build_LSTM_1_day_model_inputs(weather_forecast_df, current_f
 # print(LSTM_model_inputs)
 
 # example_values = [2900,90,60,153]
-final_answer = LSTM_prediction(LSTM_model_inputs)
+# final_answer = LSTM_prediction(LSTM_model_inputs)
 
 
-final_answer = final_answer.round(2)
-print(final_answer)
+# final_answer = final_answer.round(2)
+# print(final_answer)
 
 
 
@@ -136,11 +136,11 @@ column2 = dbc.Col(
             """
         ),
 
-        
+                    # The Neural Network predicts that tomorrow's flow will be **{final_answer}**.
+
 
         dcc.Markdown(
             f"""
-            ### The Neural Network predicts that tomorrow's flow will be **{final_answer}**.
             ### The Random Forest predicts that tomorrow's flow will be **{one_day_forecast}**.
             ----
             """

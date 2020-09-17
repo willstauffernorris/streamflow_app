@@ -31,7 +31,9 @@ model_inputs = build_1_day_model_inputs(weather_forecast_df, current_flow, days_
 LSTM_model_inputs = build_LSTM_1_day_model_inputs(weather_forecast_df, current_flow, days_ahead=1)
 
 # example_values = [2900,90,60,153]
-one_day_forecast = LSTM_prediction(LSTM_model_inputs)
+
+one_day_forecast = current_flow
+# one_day_forecast = LSTM_prediction(LSTM_model_inputs)
 print(f'NEURAL NETWORK PREDICTION: {one_day_forecast}')
 
 ## Random forest forecast
@@ -64,7 +66,7 @@ forecast_df = pd.DataFrame(data=forecast_data)
 # prev_flow_df = prev_flow_df.append(two_seven_day_forecast, ignore_index=True)
 
 prev_flow_df = prev_flow_df.append(forecast_df, ignore_index=True)
-print(prev_flow_df)
+# print(prev_flow_df)
 # exit()
 
 # forecast_list = prev_flow_df['date'].tail(7).tolist()
@@ -105,7 +107,7 @@ mapping_data = {
 
 mapping_df = pd.DataFrame(data=mapping_data)
 
-print(mapping_df)
+# print(mapping_df)
 
 # exit()
 

@@ -19,6 +19,8 @@ from functions import *
 
 
 
+
+
 weather_forecast_df = get_weather_forecast(river_dict['South Fork Payette at Lowman'][1])
 prev_flow_df = build_prev_flow_dataframe(river_dict['South Fork Payette at Lowman'][0])
 
@@ -43,11 +45,11 @@ forecast_data = {
      }
 forecast_df = pd.DataFrame(data=forecast_data)
 
+# print(forecast_df)
 
+# forecast_df = forecast_df.append(generate_2_3_day_LSTM_prediction(forecast_df, weather_forecast_df), ignore_index=True)
 
-forecast_df = forecast_df.append(generate_2_3_day_LSTM_prediction(forecast_df, weather_forecast_df), ignore_index=True)
-
-
+forecast_df = generate_2_3_day_LSTM_prediction(forecast_df, weather_forecast_df)
 
 
 # two_seven_day_forecast = generate_2_7_day_prediction(df, weather_forecast_df)

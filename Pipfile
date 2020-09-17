@@ -14,7 +14,7 @@ pandas = "*"
 requests = "*"
 joblib = "*"
 sklearn = "*"
-keras = "*"
+tensorflow = "*"
 numpy = "*"
 
 [requires]

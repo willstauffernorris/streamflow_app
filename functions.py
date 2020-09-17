@@ -53,7 +53,7 @@ def build_LSTM_1_day_model_inputs(future_weather_df, current_flow, days_ahead):
     
     return input_array
 
-
+#  Creating an ndarray from ragged nested sequences (which is a list-or-tuple of lists-or-tuples-or ndarrays with different lengths or shapes) is deprecated. If you meant to do this, you must specify 'dtype=object' when creating the ndarray
 
 def LSTM_prediction(array_of_inputs):
 
@@ -61,7 +61,7 @@ def LSTM_prediction(array_of_inputs):
     model = keras.models.load_model("data/LSTM_model.h5")
   
     ## notice the extra brackets as I make it an array
-    array_of_inputs = np.array([array_of_inputs])
+    array_of_inputs = np.array([array_of_inputs], dtype=object)
     # ensure all data is float
     array_of_inputs = array_of_inputs.astype('float32')
 

@@ -3,144 +3,53 @@ import dash
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output
-import plotly.express as px
-# import plotly.graph_objects as go
 import pandas as pd
-import numpy as np
-import resource
-# import requests
+import plotly.express as px
 from datetime import datetime  
 from datetime import timedelta
 
+
 # Imports from this application
 from app import app
-from functions import *
+
+
+mapping_df = pd.read_csv("data/latest_flows.csv")
+
+
+mapping_df['date'] = pd.to_datetime(mapping_df['date'])
 
 
 
+## create map fig##############
+fig = px.scatter_mapbox(mapping_df, lat="lat", lon="lon", hover_name="station", 
+                        # hover_data=["State", "Population"],
+                            color_discrete_sequence=["fuchsia"], zoom=4, height=300)
+fig.update_layout(
+            mapbox_style="white-bg",
+            mapbox_layers=[
+            {
+                "below": 'traces',
+                "sourcetype": "raster",
+                "sourceattribution": "United States Geological Survey",
+                "source": [
+                    "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}"
+                ]
+            }
+            ])
+fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+fig.update_traces(customdata=mapping_df['station'])
+#########
 
 
-weather_forecast_df = get_weather_forecast(river_dict['South Fork Payette at Lowman'][1])
-prev_flow_df = build_prev_flow_dataframe(river_dict['South Fork Payette at Lowman'][0])
-
-current_flow = prev_flow_df['Observation'].iloc[-1]
-
-model_inputs = build_1_day_model_inputs(weather_forecast_df, current_flow, days_ahead=1)
-
-LSTM_model_inputs = build_LSTM_1_day_model_inputs(weather_forecast_df, current_flow, days_ahead=1)
-
-# example_values = [2900,90,60,153]
-
-one_day_forecast = current_flow
-# one_day_forecast = LSTM_prediction(LSTM_model_inputs)
-print(f'NEURAL NETWORK PREDICTION: {one_day_forecast}')
-
-## Random forest forecast
-# one_day_forecast = generate_1_day_prediction(model_inputs)
-
-
-## Create forecast dataframe
-forecast_data = {
-    'Forecast': [current_flow, one_day_forecast],
-    'date': [datetime.now(), datetime.now() + timedelta(days=1)]
-     }
-forecast_df = pd.DataFrame(data=forecast_data)
-
-# print(forecast_df)
-
-
-
-## add another day of forecast on there
-# forecast_df = generate_2_3_day_LSTM_prediction(forecast_df, weather_forecast_df)
-
-
-# two_seven_day_forecast = generate_2_7_day_prediction(df, weather_forecast_df)
-
-# two_seven_day_forecast = {
-#     'Forecast': [345.95, 375.85, 368.8, 364.2],
-#     'date': ['2020-09-19','2020-09-20','2020-09-21','2020-09-22'],
-#      }
-# two_seven_day_forecast = pd.DataFrame(data=two_seven_day_forecast)
-# two_seven_day_forecast = two_seven_day_forecast.append(forecast_df, ignore_index=True)
-# prev_flow_df = prev_flow_df.append(two_seven_day_forecast, ignore_index=True)
-
-prev_flow_df = prev_flow_df.append(forecast_df, ignore_index=True)
-# print(prev_flow_df)
-# exit()
-
-# forecast_list = prev_flow_df['date'].tail(7).tolist()
-# print(forecast_list)
-
-
-
-
-fig = build_plotly_graph(
-                        prev_flow_df,
-                        title='South Fork Payette at Lowman',
-                        x='date',
-                        y=['Observation','Forecast']
-                        )
-
-
-
-
-
-
-# import pandas as pd
-# us_cities = pd.read_csv("https://raw.githubusercontent.com/plotly/datasets/master/us-cities-top-1k.csv")
-
-
-
-## This should get wrapped in a function
-
-### And I guess I need a global database to store all the current values of each river
-## This map generation should reference that database
-mapping_data = {
-    'lat': [42.838680, 44.082420],
-    'lon': [-117.629028,-115.613130],
-    'station':['Owyhee at Rome','SF Payette at Lowman'],
-    "today's flow":[-999,str(current_flow) + " CFS"],
-    "tomorrow's flow":[-999,str(one_day_forecast)+"CFS"]
-     }
-
-
-mapping_df = pd.DataFrame(data=mapping_data)
-
-# print(mapping_df)
-
-# exit()
-
-# import plotly.express as px
-
-map_fig = px.scatter_mapbox(mapping_df, lat="lat", lon="lon", hover_name="station", 
-                            hover_data={"lat":False, "lon":False,"today's flow":True,"tomorrow's flow":True},
-                        color_continuous_scale=px.colors.sequential.Blues, zoom=5, height=400)
-map_fig.update_layout(
-    mapbox_style="white-bg",
-    mapbox_layers=[
-        {
-            "below": 'traces',
-            "sourcetype": "raster",
-            "sourceattribution": "United States Geological Survey",
-            "source": [
-                "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}"
-            ]
-        }
-      ])
-map_fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-# map_fig.update_traces(hovertemplate=None)
-# map_fig.update_layout(hovermode="y")
-# fig.show()
-
-
-# 2 column layout. 1st column width = 4/12
-# https://dash-bootstrap-components.opensource.faculty.ai/l/components/layout
 column1 = dbc.Col(
     [
-
-        dcc.Graph(figure=map_fig, style={"border":"1px black solid", 'padding': 0}),
-        dcc.Graph(figure=fig, style={"border":"1px black solid", 'padding': 0}),
+        dcc.Graph(
+            id='crossfilter-indicator-scatter',
+            figure = fig,
+            hoverData={'points': [{'customdata': 'South Fork Payette at Lowman'}]}),
+        dcc.Graph(id='x-time-series'),
+        # dcc.Graph(figure=map_fig, style={"border":"1px black solid", 'padding': 0}),
+        # dcc.Graph(figure=fig, style={"border":"1px black solid", 'padding': 0}),
 
         dcc.Markdown(
             f"""
@@ -159,134 +68,160 @@ column1 = dbc.Col(
         # html.Div(children=[dcc.Graph(figure=fig)], style={"border":"2px black solid"})
 
 
-        ## This is the live link
-        html.Img(src='https://www.nwrfc.noaa.gov/station/flowplot/hydroPlot.php?id=PRLI1&pe=HG&v=1599087455/hydroPlot.png', className='img-fluid'),
-    
-        dcc.Markdown(
-            """
-        
-            ### Northwest River Forecast Center model ☝️
-            """
-        ),   
     
     ]
 )
 
 
-column2 = dbc.Col(
-    [
+def create_time_series(df,title='Flow',x='date',y=['Observation','Forecast']):
+
+    fig = px.scatter(df, x=x, y=y)
+    fig = px.line(
+                    df,
+                    x=x,
+                    y=y,
+                    # line_shape='hvh',
+                    # line_shape='linear'
+                    # width=700
+                )
 
 
+    # fig.update_traces(mode='lines+markers')
+    fig.update_layout(height=400, margin={'l': 20, 'b': 30, 'r': 10, 't': 10})
 
-        dcc.Markdown(
-            f"""
-            Banner Summit, ID
-            ### Today's weather: {weather_forecast_df['shortForecast'][0]}
+    # Add image
+    fig.add_layout_image(
+        dict(
+            source="/assets/circle-cropped.png",
+            xref="paper", yref="paper",
+            x=0.04, y=0.92,
+            sizex=0.25, sizey=0.25,
+            xanchor="left",
+            yanchor="top",
+            opacity=0.5,
+            layer="below"
+        ))
 
-            High: {weather_forecast_df['max_temp'][0].round(0)}ºF
+    fig.update_layout({
+                        'plot_bgcolor': 'rgba(0, 0, 0, 0)',
+                        'paper_bgcolor': 'rgba(0, 0, 0, 0)',
+                    })
 
-            """
+    fig.update_layout(
+        title={
+            'text': f"<b>{title}</b>",
+            'y':.99,
+            'x':0.5,
+            'xanchor': 'center',
+            'yanchor': 'top'},
+        xaxis_title="<b>Day of Month </b>",
+        yaxis_title="<b>Discharge, cfs </b>",
+        legend_title="",
+        # showlegend=False,
+        # title = 'Time Series with Custom Date-Time Format',
+        xaxis_tickformat = '%d',
+        font=dict(
+            # family="Courier New, monospace",
+            size=12,
+            color="BLACK", 
         ),
-
-
-        html.Img(src=weather_forecast_df['icon_url'][0], className='img-fluid'),
-        
-                dcc.Markdown(
-            """
-            ----
-            """
+        legend=dict(
+        orientation="h",
+        yanchor="top",
+        y=.96,
+        xanchor="right",
+        x=0.98,
+        bgcolor="White",
+        bordercolor="Black",
+        borderwidth=1
         ),
+        margin=dict(l=25, r=25, t=30, b=30),
+    )
 
-                    
- ### The Random Forest predicts that tomorrow's flow will be **{one_day_forecast}**.
+## This line always fucks up 
+    # fig.update_yaxes(range=[min(df[y])/2,max(df[y])*2])
+    fig.update_yaxes(range=[min(df), max(df)])
 
-        dcc.Markdown(
-            f"""
-           
-            # The Neural Network predicts that tomorrow's flow will be **{one_day_forecast}**.
-            ----
-            """
-        ),
-
-
-        
-
-
-        dcc.Markdown(
-            """
-        
-            ## **River Prediction**
-
-            This website uses machine learning to predict a river's flow. 
-            Read more about how the model was created [here.](https://towardsdatascience.com/predicting-the-flow-of-the-south-fork-payette-river-using-an-lstm-neural-network-65292eadf6a6)
+    
+    fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
+    fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
+    fig.update_xaxes(showline=True, linewidth=1, linecolor='black', mirror=True)
+    fig.update_yaxes(showline=True, linewidth=1, linecolor='black', mirror=True)
+    fig.update_xaxes(nticks=21)
 
 
-            """
-        ),
+    fig.add_annotation(
+                x=datetime.now() + timedelta(days=1.5),
+                y=200,
+                text="1-3 Day <br> Forecast")
+    fig.add_annotation(
+                x='2020-09-22',
+                y=200,
+                text="4-7 Day <br> Forecast")
+    fig.update_annotations(dict(
+                xref="x",
+                yref="y",
+                # showarrow=True,
+                # arrowhead=7,
+                ax=0,
+                # ay=-40
+    ))
 
-        # dcc.Markdown(
-        #     """
-        #     ----
-        #     """
-        # ),
+        # Add shape regions
+    fig.update_layout(
+        shapes=[
+            dict(
+                type="rect",
+                # x-reference is assigned to the x-values
+                xref="x",
+                # y-reference is assigned to the plot paper [0,1]
+                yref="paper",
+                x0=datetime.now(),
+                y0=0,
+                x1=datetime.now() + timedelta(days=3),
+                y1=1,
+                fillcolor="LightGreen",
+                opacity=0.2,
+                layer="below",
+                line_width=0,
+            ),
 
-        dcc.Markdown(
-            """
-            ### Coming soon:
-
-            - Owyhee River at Rome, OR forecast (not currently served by NWRFC)
-
-            - Integrations with precipitation data
-
-            - Neural network model
-            
-
-            ### Coming later:
-
-            - Incorporating Google Earth Engine data into model
-
-            - South Fork Salmon at Krassel, ID (not currently served by NWRFC)
-
-            - Wind River at Stabler, WA (not currently served by NWRFC)
-
-            - Little White Salmon at Willard, WA (currently ungauged)
-
-
-            """
-        ),
-
-        # html.Img(src='/assets/rockwater.jpg', className='img-fluid'),
-        # dcc.Link(dbc.Button('Predict', color='primary'), href='/predictions')
-    ],
-    md=4,
-)
-
-
-layout = dbc.Row([column1, column2])
+            dict(
+                type="rect",
+                # x-reference is assigned to the x-values
+                xref="x",
+                # y-reference is assigned to the plot paper [0,1]
+                yref="paper",
+                x0=datetime.now() + timedelta(days=3),
+                y0=0,
+                x1=datetime.now() + timedelta(days=10),
+                y1=1,
+                fillcolor="LightPink",
+                opacity=0.2,
+                layer="below",
+                line_width=0,
+            ),
+        ]
+    )
+    
 
 
+    return fig
 
 
-## Resource usage
-peak_memory_usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-print(f'This app is using {(peak_memory_usage/1000000):.2f}MB max')
 
-time_in_user_mode = resource.getrusage(resource.RUSAGE_SELF).ru_utime
-print(f'This app takes {(time_in_user_mode):.2f} seconds to run')
+@app.callback(
+    dash.dependencies.Output('x-time-series', 'figure'),
+    [dash.dependencies.Input('crossfilter-indicator-scatter', 'hoverData'),
+    ])
+def update_y_timeseries(hoverData):
+    df = mapping_df
 
-shared_memory_size = resource.getrusage(resource.RUSAGE_SELF).ru_ixrss
-print(f'This app is using {(peak_memory_usage/1000000):.2f}MB shared memory')
+    city_name = hoverData['points'][0]['customdata']
 
-# #!/usr/bin/env python
-# import psutil
-# # gives a single float value
-# print(f'single float value {psutil.cpu_percent()}')
-# # gives an object with many fields
-# print(f'object with many fields{psutil.virtual_memory()}')
-# # you can convert that object to a dictionary 
-# print(dict(psutil.virtual_memory()._asdict()))
-# # you can have the percentage of used RAM
-# print(psutil.virtual_memory().percent)
+    df = df[df['station']== city_name]
+ 
+    return create_time_series(df)
 
-# # you can calculate percentage of available memory
-# print(psutil.virtual_memory().available * 100 / psutil.virtual_memory().total)
+
+layout = dbc.Row([column1])

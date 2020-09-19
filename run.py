@@ -7,15 +7,16 @@ from dash.dependencies import Input, Output
 
 # Imports from this application
 from app import app, server
-from pages import index, predictions, insights, process, owyhee
+from pages import index, predictions, insights, process, owyhee, about
 
 # Navbar docs: https://dash-bootstrap-components.opensource.faculty.ai/l/components/navbar
 navbar = dbc.NavbarSimple(
     brand='River Prediction',
     brand_href='/', 
     children=[
-        dbc.NavItem(dcc.Link('South Fork Payette', href='/', className='nav-link')),
-        dbc.NavItem(dcc.Link('Owyhee', href='/owyhee', className='nav-link')),
+        dbc.NavItem(dcc.Link('Home', href='/', className='nav-link')),
+        dbc.NavItem(dcc.Link('About', href='/about', className='nav-link')),
+        # dbc.NavItem(dcc.Link('Owyhee', href='/owyhee', className='nav-link')),
         # dbc.NavItem(dcc.Link('Predictions', href='/predictions', className='nav-link')), 
         # dbc.NavItem(dcc.Link('Insights', href='/insights', className='nav-link')), 
         # dbc.NavItem(dcc.Link('Process', href='/process', className='nav-link')), 
@@ -70,6 +71,8 @@ def display_page(pathname):
         return index.layout
     elif pathname == '/owyhee':
         return owyhee.layout
+    elif pathname == '/about':
+        return about.layout
     elif pathname == '/predictions':
         return predictions.layout
     elif pathname == '/insights':

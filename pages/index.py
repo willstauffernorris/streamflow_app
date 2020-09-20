@@ -22,8 +22,8 @@ mapping_df['date'] = pd.to_datetime(mapping_df['date'])
 
 ## create map fig##############
 fig = px.scatter_mapbox(mapping_df, lat="lat", lon="lon", hover_name="station", 
-                        # hover_data=["State", "Population"],
-                            color_discrete_sequence=["fuchsia"], zoom=4, height=300)
+                        hover_data={"lat":False, "lon":False,"Observation":False,"Forecast":False},
+                            color_discrete_sequence=["DodgerBlue"], zoom=5, height=300)
 fig.update_layout(
             mapbox_style="white-bg",
             mapbox_layers=[
@@ -141,6 +141,7 @@ def create_time_series(df,title='Flow',x='date',y=['Observation','Forecast']):
 ## This line always fucks up 
     # fig.update_yaxes(range=[min(df[y])/2,max(df[y])*2])
     fig.update_yaxes(range=[min(df), max(df)])
+    # fig.update_yaxes(range=[min(min(df[y[0]]),min(df[y[1]]))*.5, max(max(df[y[0]]),max(df[y[1]]))*2])
 
     
     fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
@@ -155,7 +156,7 @@ def create_time_series(df,title='Flow',x='date',y=['Observation','Forecast']):
                 y=200,
                 text="1-3 Day <br> Forecast")
     fig.add_annotation(
-                x='2020-09-22',
+                x=datetime.now() + timedelta(days=6),
                 y=200,
                 text="4-7 Day <br> Forecast")
     fig.update_annotations(dict(

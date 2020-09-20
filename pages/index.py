@@ -12,8 +12,14 @@ from datetime import timedelta
 # Imports from this application
 from app import app
 
+import os.path, time
+
 
 mapping_df = pd.read_csv("data/latest_flows.csv")
+# print("Last modified: %s" % time.ctime(os.path.getmtime("test.txt")))
+
+current_MDT = datetime.utcnow() - timedelta(hours=6)
+current_MDT
 
 
 mapping_df['date'] = pd.to_datetime(mapping_df['date'])
@@ -50,7 +56,7 @@ column1 = dbc.Col(
 
         dcc.Markdown(
             f"""
-            Hover over a gauge to see its past and predicted flow. Double click to reset the map.
+            **Hover over a gauge to see its past and predicted flow. Double click to reset the map.**
             
             """
         ),
@@ -66,17 +72,11 @@ column1 = dbc.Col(
 
         dcc.Markdown(
             f"""
-            Forecast created {str(datetime.now())[:16]} MST
-            ### Will's model ☝️
-            
+            Forecast created: {time.ctime(os.path.getctime("data/latest_flows.csv"))} MST. \n
+            **Note:** Forecasts for White Salmon at Underwood, Owyhee at Rome, South Fork Salmon at Krassel, and Middle Fork Salmon at Middle Fork Lodge are not operational yet. Models coming soon.
             """
         ),
 
-        dcc.Markdown(
-            """
-            ----
-            """
-        ),
 
         # html.Div(children=[dcc.Graph(figure=fig)], style={"border":"2px black solid"})
 
@@ -153,8 +153,8 @@ def create_time_series(df,title='Flow',x='date',y=['Observation','Forecast']):
 
 ## This line always fucks up 
     # fig.update_yaxes(range=[min(df[y])/2,max(df[y])*2])
-    fig.update_yaxes(range=[min(df), max(df)])
-    # fig.update_yaxes(range=[min(min(df[y[0]]),min(df[y[1]]))*.5, max(max(df[y[0]]),max(df[y[1]]))*2])
+    # fig.update_yaxes(range=[min(df), max(df)])
+    fig.update_yaxes(range=[min(min(df[y[0]]),min(df[y[1]]))*.5, max(max(df[y[0]]),max(df[y[1]]))*2])
 
     
     fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
@@ -166,11 +166,11 @@ def create_time_series(df,title='Flow',x='date',y=['Observation','Forecast']):
 
     fig.add_annotation(
                 x=datetime.now() + timedelta(days=1.5),
-                y=200,
+                y=min(min(df[y[0]]),min(df[y[1]]))*.5,
                 text="1-3 Day <br> Forecast")
     fig.add_annotation(
-                x=datetime.now() + timedelta(days=6),
-                y=200,
+                x=datetime.now() + timedelta(days=4.5),
+                y=min(min(df[y[0]]),min(df[y[1]]))*.5,
                 text="4-7 Day <br> Forecast")
     fig.update_annotations(dict(
                 xref="x",

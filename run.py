@@ -11,7 +11,7 @@ from pages import index, predictions, insights, process, owyhee, about
 
 # Navbar docs: https://dash-bootstrap-components.opensource.faculty.ai/l/components/navbar
 navbar = dbc.NavbarSimple(
-    brand='River Prediction',
+    brand="rivers.fyi | flow forecast",
     brand_href='/', 
     children=[
         dbc.NavItem(dcc.Link('Home', href='/', className='nav-link')),

@@ -23,7 +23,9 @@ mapping_df['date'] = pd.to_datetime(mapping_df['date'])
 ## create map fig##############
 fig = px.scatter_mapbox(mapping_df, lat="lat", lon="lon", hover_name="station", 
                         hover_data={"lat":False, "lon":False,"Observation":False,"Forecast":False},
-                            color_discrete_sequence=["DodgerBlue"], zoom=5, height=300)
+                            color_discrete_sequence=["DodgerBlue"], zoom=5, height=300,
+                        
+                                        )
 fig.update_layout(
             mapbox_style="white-bg",
             mapbox_layers=[
@@ -36,6 +38,7 @@ fig.update_layout(
                 ]
             }
             ])
+# fig.update_layout(mapbox_style="outdoors")
 fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
 fig.update_traces(customdata=mapping_df['station'])
 #########
@@ -43,6 +46,16 @@ fig.update_traces(customdata=mapping_df['station'])
 
 column1 = dbc.Col(
     [
+
+
+        dcc.Markdown(
+            f"""
+            Hover over a gauge to see its past and predicted flow. Double click to reset the map.
+            
+            """
+        ),
+
+
         dcc.Graph(
             id='crossfilter-indicator-scatter',
             figure = fig,

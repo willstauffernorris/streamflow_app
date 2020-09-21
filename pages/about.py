@@ -9,9 +9,12 @@ import plotly.express as px
 from datetime import datetime  
 from datetime import timedelta
 import os.path, time
+# import datetime
 
 # Imports from this application
 from app import app
+
+
 
 # from index import *
 # from index import mapping_df
@@ -158,7 +161,13 @@ payette_df = mapping_df[mapping_df['station']=='South Fork Payette at Lowman']
 
 fig = create_time_series(payette_df,title='South Fork Payette at Lowman')
 
+dt=os.path.getmtime('data/latest_flows.csv')
+# print(datetime.fromtimestamp(dt))
+utc_time = datetime.utcfromtimestamp(dt)
 
+current_MDT = utc_time - timedelta(hours=6)
+
+# print(current_MDT)
 
 # 1 column layout
 # https://dash-bootstrap-components.opensource.faculty.ai/l/components/layout
@@ -174,11 +183,11 @@ column1 = dbc.Col(
             This very simple looking web app has a lot going on behind the scenes! Here are the steps I used to create rivers.fyi.
 
             ### Gather historical flow and climate data
-            I gathered flow data from the period 1987-2020 from the USGS. I merged this dataset with climate data from NRCS SNOTEL stations. This 30+ year dataset is used to train my model.
+            I gathered flow data from the period 1912-2020 from the USGS, although most stations have consistent data from the late 80's onward. I merged this dataset with climate data from NRCS SNOTEL stations, which generally starts around 1980. This typically 30+ year dataset is used to train my model.
             
 
             ### Create a model
-            I used an LSTM neural network to create a model with .98 R^2. Read more about how the model was created [here.](https://towardsdatascience.com/predicting-the-flow-of-the-south-fork-payette-river-using-an-lstm-neural-network-65292eadf6a6) 
+            I used an LSTM neural network to create models with R^2 between .90 and .98 for a forecast one day in advance. Read more about how the model was created [here.](https://towardsdatascience.com/predicting-the-flow-of-the-south-fork-payette-river-using-an-lstm-neural-network-65292eadf6a6) 
             I will report R^2 and mean average error for each river in the future.
 
             Currently, I'm using a time window of one day for the LSTM model, but I will likely increase this window at least for some of the models where the gauge is far downstream of the SNOTEL station such as the Owyhee River.
@@ -219,17 +228,15 @@ column1 = dbc.Col(
             ### Next steps
             There are many, many ways to improve this app. The features I'd like to add are:
 
-            - Finish creating custom models for each river basin (Owyhee, South Salmon, White Salmon)
+            - Integrations with precipitation data. This is tough because I have to parse the NOAA forecast text to get actual precipitation amounts. This feature doens't make a huge difference right now (fall) in the Rocky Mountain rivers, but it's one of the most important features for the Cascade mountain rivers (White Salmon).
 
-            - Integrations with precipitation data
-
-            - Incorporating Google Earth Engine data into model
+            - Incorporating Google Earth Engine data into model. This would help the model determine if it's a wet or dry year. Right now, I think the Owyhee model is trying to go up to get closer to the historical mean, but it's low because it's a drought year in that basin.
 
             - Increase LSTM time window
 
             - Report error metrics
 
-            - Use difference in flow each day as target, instead of cfs.
+            - Use difference in flow each day as target, instead of cfs. This dramatically decreases the R^2 metric, and turns my data into a stationary time series. Read more [here.](https://otexts.com/fpp2/stationarity.html)
 
             - Model interpretability - run a parallel random forest model and log feature importances
 
@@ -257,7 +264,7 @@ column1 = dbc.Col(
 
         dcc.Markdown(
             f"""
-            Forecast created: {time.ctime(os.path.getctime("data/latest_flows.csv"))} MST. \n
+            Forecast created: {str(current_MDT)[:-10]} MDT. \n
 
             ### And this is the Northwest River Forecast Center model 👇
 

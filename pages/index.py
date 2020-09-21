@@ -18,8 +18,13 @@ import os.path, time
 mapping_df = pd.read_csv("data/latest_flows.csv")
 # print("Last modified: %s" % time.ctime(os.path.getmtime("test.txt")))
 
-current_MDT = datetime.utcnow() - timedelta(hours=6)
-current_MDT
+dt=os.path.getmtime('data/latest_flows.csv')
+# print(datetime.fromtimestamp(dt))
+utc_time = datetime.utcfromtimestamp(dt)
+
+current_MDT = utc_time - timedelta(hours=6)
+
+# print(current_MDT)
 
 
 mapping_df['date'] = pd.to_datetime(mapping_df['date'])
@@ -72,8 +77,8 @@ column1 = dbc.Col(
 
         dcc.Markdown(
             f"""
-            Forecast created: {time.ctime(os.path.getctime("data/latest_flows.csv"))} MST. \n
-            **Note:** Forecasts only take into consideration the temperature, day of year, and previous day's flow. Better models coming soon.
+            Forecast created: {str(current_MDT)[:-10]} MDT. \n
+            **Note:** Forecasts only take into consideration the maximum and minimum temperature, day of year, and previous day's flow. Better models coming soon.
             """
         ),
 

@@ -7,7 +7,7 @@ import pandas as pd
 import plotly.express as px
 from datetime import datetime  
 from datetime import timedelta
-
+import numpy as np
 
 # Imports from this application
 from app import app
@@ -73,7 +73,7 @@ column1 = dbc.Col(
         dcc.Markdown(
             f"""
             Forecast created: {time.ctime(os.path.getctime("data/latest_flows.csv"))} MST. \n
-            **Note:** Forecasts for White Salmon at Underwood, Owyhee at Rome, South Fork Salmon at Krassel, and Middle Fork Salmon at Middle Fork Lodge are not operational yet. Models coming soon.
+            **Note:** Forecasts only take into consideration the temperature, day of year, and previous day's flow. Better models coming soon.
             """
         ),
 
@@ -151,17 +151,16 @@ def create_time_series(df,title='Flow',x='date',y=['Observation','Forecast']):
         margin=dict(l=25, r=25, t=30, b=30),
     )
 
-## This line always fucks up 
-    # fig.update_yaxes(range=[min(df[y])/2,max(df[y])*2])
-    # fig.update_yaxes(range=[min(df), max(df)])
-    fig.update_yaxes(range=[min(min(df[y[0]]),min(df[y[1]]))*.5, max(max(df[y[0]]),max(df[y[1]]))*2])
+## This line scales the y axis so when a prediction is made that's 
+# significantly higher or lower than the current flow, it looks good in chart 
+    fig.update_yaxes(range=[min(np.nanmin(df[y[0]]),np.nanmin(df[y[1]]))*.5, max(np.nanmax(df[y[0]]),np.nanmax(df[y[1]]))*2])
 
     
     fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
     fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
     fig.update_xaxes(showline=True, linewidth=1, linecolor='black', mirror=True)
     fig.update_yaxes(showline=True, linewidth=1, linecolor='black', mirror=True)
-    fig.update_xaxes(nticks=21)
+    fig.update_xaxes(nticks=18)
 
 
     fig.add_annotation(
@@ -208,7 +207,7 @@ def create_time_series(df,title='Flow',x='date',y=['Observation','Forecast']):
                 yref="paper",
                 x0=datetime.now() + timedelta(days=3),
                 y0=0,
-                x1=datetime.now() + timedelta(days=10),
+                x1=datetime.now() + timedelta(days=7),
                 y1=1,
                 fillcolor="LightPink",
                 opacity=0.2,

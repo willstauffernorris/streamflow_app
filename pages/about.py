@@ -171,7 +171,7 @@ column1 = dbc.Col(
 
             This website uses machine learning to predict a river's flow. Predictions are currently generated once per day.
 
-            This very simple looking web app has a lot going on out of sight! Here are the steps I used to create rivers.fyi.
+            This very simple looking web app has a lot going on behind the scenes! Here are the steps I used to create rivers.fyi.
 
             ### Gather historical flow and climate data
             I gathered flow data from the period 1987-2020 from the USGS. I merged this dataset with climate data from NRCS SNOTEL stations. This 30+ year dataset is used to train my model.
@@ -219,7 +219,7 @@ column1 = dbc.Col(
             ### Next steps
             There are many, many ways to improve this app. The features I'd like to add are:
 
-            - Finish creating custom models for each river basin (Owyhee, South Salmon, Middle Fork Salmon, White Salmon)
+            - Finish creating custom models for each river basin (Owyhee, South Salmon, White Salmon)
 
             - Integrations with precipitation data
 
@@ -229,9 +229,9 @@ column1 = dbc.Col(
 
             - Report error metrics
 
-            - Use difference in flow each day as error metric, instead of cfs.
+            - Use difference in flow each day as target, instead of cfs.
 
-            - Model interpretability - run a parallel random forest and log feature importances
+            - Model interpretability - run a parallel random forest model and log feature importances
 
             - Include Wind River at Stabler, WA (not currently served by NWRFC - WA State runs the gauge)
 

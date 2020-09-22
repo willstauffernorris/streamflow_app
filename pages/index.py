@@ -27,8 +27,6 @@ dt=os.path.getmtime('data/latest_flows.csv')
 utc_time = datetime.utcfromtimestamp(dt)
 current_MDT = utc_time - timedelta(hours=6)
 
-mapping_df['date'] = pd.to_datetime(mapping_df['date'])
-
 
 ### testing connection to database
 DATABASE_URL = 'postgres://oduypdxqcwjvgk:035fbda61502204299dfc3dda37746bca2a09b79c13781fba551fb7d49a9e71d@ec2-3-218-112-22.compute-1.amazonaws.com:5432/dbnanadb6uicbk'
@@ -38,7 +36,15 @@ database_df = pd.read_sql_query(sql, conn)
 conn = None
 
 database_df = database_df.rename(columns={"observation":"Observation", "forecast":"Forecast"})
-print(database_df)
+database_df = database_df.drop(columns="id")
+# print(database_df)
+
+# CHANGE THIS LINE TO SEE THE NEW DATABASE DATA
+# mapping_df = database_df
+
+mapping_df['date'] = pd.to_datetime(mapping_df['date'])
+
+
 
 
 
@@ -122,6 +128,8 @@ column1 = dbc.Col(
             For development purposes. Last SF Payette forecast: {last_observation}
             """
         ),
+        # dcc.Graph(
+        #     ),
 
 
         # html.Div(children=[dcc.Graph(figure=fig)], style={"border":"2px black solid"})
@@ -140,7 +148,8 @@ def create_time_series(df,title='Flow',x='date',y=['Observation','Forecast']):
                     x=x,
                     y=y,
                     # line_shape='hvh',
-                    # line_shape='linear'
+                    line_shape='linear'
+                    # line_shape='spline'
                     # width=700
                 )
 

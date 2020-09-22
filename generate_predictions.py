@@ -40,40 +40,40 @@ river_dict = {
                                 #    '/content/SouthForkPayetteatKrassel_std_scaler.bin'
                                     'models/SouthForkPayetteatKrassel_std_scaler.bin'
                                    ),
-    # 'Owyhee at Rome' : ("https://waterservices.usgs.gov/nwis/iv/?format=json&sites=13181000&period=P10D&parameterCd=00060&siteStatus=all",
-    #                 'https://api.weather.gov/gridpoints/LKN/117,175/forecast',  #Fawn Creek Snotel
-    #                 42.838680,
-    #                -117.629028,
-    #                 'Owyhee at Rome',
-    #                 '/content/OwyheeatRome_LSTM_model.h5',
-    #                 '/content/OwyheeatRome_std_scaler.bin'
-    #                   ),
+    'Owyhee at Rome' : ("https://waterservices.usgs.gov/nwis/iv/?format=json&sites=13181000&period=P10D&parameterCd=00060&siteStatus=all",
+                    'https://api.weather.gov/gridpoints/LKN/117,175/forecast',  #Fawn Creek Snotel
+                    42.838680,
+                   -117.629028,
+                    'Owyhee at Rome',
+                    'models/OwyheeatRome_LSTM_model.h5',
+                    'models/OwyheeatRome_std_scaler.bin'
+                      ),
               
-    # 'Middle Fork Salmon at Middle Fork Lodge':("https://waterservices.usgs.gov/nwis/iv/?format=json&sites=13309220&period=P10D&parameterCd=00060&siteStatus=all",
-    #                                            "https://api.weather.gov/gridpoints/BOI/169,112/forecast", ## Banner Summit SNOTEL
-    #                                            44.723362,
-    #                                            -115.015526,
-    #                                            'Middle Fork Salmon at Middle Fork Lodge',
-    #                                            '/content/MiddleForkSalmonatMiddleForkLodge_LSTM.h5',
-    #                                            '/content/MiddleForkSalmonatMiddleForkLodge_std_scaler.bin'
-    #                                               ),
+    'Middle Fork Salmon at Middle Fork Lodge':("https://waterservices.usgs.gov/nwis/iv/?format=json&sites=13309220&period=P10D&parameterCd=00060&siteStatus=all",
+                                               "https://api.weather.gov/gridpoints/BOI/169,112/forecast", ## Banner Summit SNOTEL
+                                               44.723362,
+                                               -115.015526,
+                                               'Middle Fork Salmon at Middle Fork Lodge',
+                                               'models/MiddleForkSalmonatMiddleForkLodge_LSTM.h5',
+                                               'models/MiddleForkSalmonatMiddleForkLodge_std_scaler.bin'
+                                                  ),
               
-    #   'South Fork Salmon at Krassel':("https://waterservices.usgs.gov/nwis/iv/?format=json&sites=13310700&period=P10D&parameterCd=00060&siteStatus=all",
-    #                                   'https://api.weather.gov/gridpoints/BOI/158,145/forecast', ## Need to update this to Big creek summit - its' Krassel right now
-    #                                   44.982159,
-    #                                   -115.725846,
-    #                                   'South Fork Salmon at Krassel',
-    #                                   '/content/SouthSalmon_LSTM_model.h5',
-    #                                   '/content/SouthSalmon_std_scaler.bin'
-    #                                    ),
-    #   'White Salmon at Underwood':("https://waterservices.usgs.gov/nwis/iv/?format=json&sites=14123500&period=P10D&parameterCd=00060&siteStatus=all",
-    #                                'https://api.weather.gov/gridpoints/PQR/151,106/forecast', ## I used Surprise Lakes SNOTEL data, but this forecast is for Underwood
-    #                                45.751834,
-    #                                -121.527002,
-    #                                'White Salmon at Underwood' ,
-    #                                '/content/WhiteSalmon_LSTM_model.h5',
-    #                                '/content/WhiteSalmon_std_scaler.bin'
-    #                                ),
+      'South Fork Salmon at Krassel':("https://waterservices.usgs.gov/nwis/iv/?format=json&sites=13310700&period=P10D&parameterCd=00060&siteStatus=all",
+                                      'https://api.weather.gov/gridpoints/BOI/158,145/forecast', ## Need to update this to Big creek summit - its' Krassel right now
+                                      44.982159,
+                                      -115.725846,
+                                      'South Fork Salmon at Krassel',
+                                      'models/SouthSalmon_LSTM_model.h5',
+                                      'models/SouthSalmon_std_scaler.bin'
+                                       ),
+      'White Salmon at Underwood':("https://waterservices.usgs.gov/nwis/iv/?format=json&sites=14123500&period=P10D&parameterCd=00060&siteStatus=all",
+                                   'https://api.weather.gov/gridpoints/PQR/151,106/forecast', ## I used Surprise Lakes SNOTEL data, but this forecast is for Underwood
+                                   45.751834,
+                                   -121.527002,
+                                   'White Salmon at Underwood' ,
+                                   'models/WhiteSalmon_LSTM_model.h5',
+                                   'models/WhiteSalmon_std_scaler.bin'
+                                   ),
                                                
               }
 
@@ -97,6 +97,7 @@ def build_prev_flow_dataframe(river):
     for i in range(len(payload['value']['timeSeries'][0]['values'][0]['value'])):
         cfs = float(payload['value']['timeSeries'][0]['values'][0]['value'][i]['value'])
         date = payload['value']['timeSeries'][0]['values'][0]['value'][i]['dateTime']
+        # date = str(date)[:5]+"00:00"
         date = pd.to_datetime(date)
         lat = river[2]
         lon = river[3]
@@ -263,7 +264,7 @@ mapping_flow_df = pd.DataFrame({
                     })
 
 for river in river_dict:
-  # print(river_dict[river])
+  print(f"Generating data for {river}...")
 
   ## all USGS data for the last 10 days
   prev_flow_df = build_prev_flow_dataframe(river_dict[river])
@@ -278,7 +279,7 @@ for river in river_dict:
   mapping_flow_df = mapping_flow_df.append(prev_flow_df, ignore_index=True)
   mapping_flow_df = mapping_flow_df.append(forecast_flow_df, ignore_index=True)
 
-print(mapping_flow_df)
+print(mapping_flow_df.tail(10))
 
 # mapping_flow_df.to_csv('data/generated_latest_flows.csv')
 

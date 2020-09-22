@@ -9,6 +9,11 @@ from datetime import datetime
 from datetime import timedelta
 import numpy as np
 
+## database imports
+import os
+import psycopg2
+import psycopg2.extras as extras
+
 # Imports from this application
 from app import app
 
@@ -25,18 +30,31 @@ current_MDT = utc_time - timedelta(hours=6)
 mapping_df['date'] = pd.to_datetime(mapping_df['date'])
 
 
+### testing connection to database
+DATABASE_URL = 'postgres://oduypdxqcwjvgk:035fbda61502204299dfc3dda37746bca2a09b79c13781fba551fb7d49a9e71d@ec2-3-218-112-22.compute-1.amazonaws.com:5432/dbnanadb6uicbk'
+conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+sql = "select * from flow;"
+database_df = pd.read_sql_query(sql, conn)
+conn = None
+
+database_df = database_df.rename(columns={"observation":"Observation", "forecast":"Forecast"})
+print(database_df)
+
+
+
 
 
 #### testing generated data#####
-test_df = pd.read_csv("data/generated_latest_flows.csv")
-test_dt=os.path.getmtime('data/generated_latest_flows.csv')
-# print(datetime.fromtimestamp(dt))
-test_utc_time = datetime.utcfromtimestamp(test_dt)
-current_test_MDT = test_utc_time - timedelta(hours=6)
-print(current_test_MDT)
+# test_df = pd.read_csv("data/generated_latest_flows.csv")
+# test_dt=os.path.getmtime('data/generated_latest_flows.csv')
+# # print(datetime.fromtimestamp(dt))
+# test_utc_time = datetime.utcfromtimestamp(test_dt)
+# current_test_MDT = test_utc_time - timedelta(hours=6)
+# print(current_test_MDT)
 
-
-last_observation = test_df['Forecast'].iloc[-1]
+last_observation = "None!"
+if len(database_df) > 0:
+    last_observation = database_df['Forecast'].iloc[-1]
 
 #########
 
@@ -101,7 +119,7 @@ column1 = dbc.Col(
 
         dcc.Markdown(
             f"""
-            For development purposes. New data generated at: {current_test_MDT}. Last SF Payette forecast: {last_observation}
+            For development purposes. Last SF Payette forecast: {last_observation}
             """
         ),
 

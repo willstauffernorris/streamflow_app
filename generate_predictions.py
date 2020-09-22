@@ -17,6 +17,12 @@ from tensorflow import keras
 import joblib
 from joblib import load
 
+## database
+import os
+import psycopg2
+import psycopg2.extras as extras
+
+
 current_MDT = datetime.utcnow() - timedelta(hours=6)
 current_MDT
 
@@ -274,11 +280,37 @@ for river in river_dict:
 
 print(mapping_flow_df)
 
-mapping_flow_df.to_csv('data/generated_latest_flows.csv')
+# mapping_flow_df.to_csv('data/generated_latest_flows.csv')
+
+DATABASE_URL = 'postgres://oduypdxqcwjvgk:035fbda61502204299dfc3dda37746bca2a09b79c13781fba551fb7d49a9e71d@ec2-3-218-112-22.compute-1.amazonaws.com:5432/dbnanadb6uicbk'
 
 
+conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+
+def delete_existing_and_execute_values(conn, df, table):
+    """
+    Using psycopg2.extras.execute_values() to insert the dataframe
+    """
+    # Create a list of tupples from the dataframe values
+    tuples = [tuple(x) for x in df.to_numpy()]
+    # Comma-separated dataframe columns
+    cols = ','.join(list(df.columns))
+    # SQL quert to execute
+    query  = "INSERT INTO %s(%s) VALUES %%s" % (table, cols)
+    cursor = conn.cursor()
+
+    cursor.execute(f"DELETE FROM {table}")
+    try:
+        extras.execute_values(cursor, query, tuples)
+        conn.commit()
+    except (Exception, psycopg2.DatabaseError) as error:
+        print("Error: %s" % error)
+        conn.rollback()
+        cursor.close()
+        return 1
+    print("execute_values() done")
+    cursor.close()
 
 
-
-
-# generated_latest_flows.csv
+# calling the function
+delete_existing_and_execute_values(conn, mapping_flow_df, 'flow')

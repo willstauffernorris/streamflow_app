@@ -19,15 +19,26 @@ mapping_df = pd.read_csv("data/latest_flows.csv")
 # print("Last modified: %s" % time.ctime(os.path.getmtime("test.txt")))
 
 dt=os.path.getmtime('data/latest_flows.csv')
-# print(datetime.fromtimestamp(dt))
 utc_time = datetime.utcfromtimestamp(dt)
-
 current_MDT = utc_time - timedelta(hours=6)
 
-# print(current_MDT)
-
-
 mapping_df['date'] = pd.to_datetime(mapping_df['date'])
+
+
+
+
+#### testing generated data#####
+test_df = pd.read_csv("data/generated_latest_flows.csv")
+test_dt=os.path.getmtime('data/generated_latest_flows.csv')
+# print(datetime.fromtimestamp(dt))
+test_utc_time = datetime.utcfromtimestamp(test_dt)
+current_test_MDT = test_utc_time - timedelta(hours=6)
+print(current_test_MDT)
+
+
+last_observation = test_df['Forecast'].iloc[-1]
+
+#########
 
 
 
@@ -79,6 +90,18 @@ column1 = dbc.Col(
             f"""
             Forecast created: {str(current_MDT)[:-3]} MDT. \n
             **Note:** Forecasts only take into consideration the maximum and minimum temperature, day of year, and previous day's flow. Better models coming soon.
+            """
+        ),
+
+        dcc.Markdown(
+            """
+            -----------
+            """
+        ),
+
+        dcc.Markdown(
+            f"""
+            For development purposes. New data generated at: {current_test_MDT}. Last SF Payette forecast: {last_observation}
             """
         ),
 

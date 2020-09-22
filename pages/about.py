@@ -264,7 +264,7 @@ column1 = dbc.Col(
 
         dcc.Markdown(
             f"""
-            Forecast created: {str(current_MDT)[:-10]} MDT. \n
+            Forecast created: {str(current_MDT)[:-3]} MDT. \n
 
             ### And this is the Northwest River Forecast Center model 👇
 

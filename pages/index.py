@@ -77,7 +77,7 @@ column1 = dbc.Col(
 
         dcc.Markdown(
             f"""
-            Forecast created: {str(current_MDT)[:-10]} MDT. \n
+            Forecast created: {str(current_MDT)[:-3]} MDT. \n
             **Note:** Forecasts only take into consideration the maximum and minimum temperature, day of year, and previous day's flow. Better models coming soon.
             """
         ),

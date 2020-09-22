@@ -194,9 +194,9 @@ def create_time_series(df,title='Flow',x='date',y=['Observation','Forecast']):
                 xref="x",
                 # y-reference is assigned to the plot paper [0,1]
                 yref="paper",
-                x0=datetime.now(),
+                x0=current_MDT,
                 y0=0,
-                x1=datetime.now() + timedelta(days=3),
+                x1=current_MDT + timedelta(days=3),
                 y1=1,
                 fillcolor="LightGreen",
                 opacity=0.2,
@@ -210,9 +210,9 @@ def create_time_series(df,title='Flow',x='date',y=['Observation','Forecast']):
                 xref="x",
                 # y-reference is assigned to the plot paper [0,1]
                 yref="paper",
-                x0=datetime.now() + timedelta(days=3),
+                x0=current_MDT + timedelta(days=3),
                 y0=0,
-                x1=datetime.now() + timedelta(days=7),
+                x1=current_MDT + timedelta(days=7),
                 y1=1,
                 fillcolor="LightPink",
                 opacity=0.2,

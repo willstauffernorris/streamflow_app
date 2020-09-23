@@ -20,16 +20,9 @@ from app import app
 
 import os.path, time
 
-
-# mapping_df = pd.read_csv("data/latest_flows.csv")
-# print("Last modified: %s" % time.ctime(os.path.getmtime("test.txt")))
-
-# dt=os.path.getmtime('data/latest_flows.csv')
-# utc_time = datetime.utcfromtimestamp(dt)
 current_MDT = datetime.utcnow() - timedelta(hours=6)
 
-
-### testing connection to database
+# Connecting to database
 DATABASE_URL = os.environ['DATABASE_URL']
 conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 sql = "select * from flow;"
@@ -38,11 +31,7 @@ conn = None
 
 database_df = database_df.rename(columns={"observation":"Observation", "forecast":"Forecast"})
 database_df = database_df.drop(columns="id")
-# print(database_df)
-
-# CHANGE THIS LINE TO SEE THE NEW DATABASE DATA
 mapping_df = database_df
-
 mapping_df['date'] = pd.to_datetime(mapping_df['date'])
 
 
@@ -96,33 +85,14 @@ column1 = dbc.Col(
         ),
         # dcc.Graph(figure=map_fig, style={"border":"1px black solid", 'padding': 0}),
         # dcc.Graph(figure=fig, style={"border":"1px black solid", 'padding': 0}),
-
+        # Forecast created: {str(current_MDT)[:-3]} MDT. \n
         dcc.Markdown(
             f"""
-            Forecast created: {str(current_MDT)[:-3]} MDT. \n
+            
             **Note:** Forecasts only take into consideration the maximum and minimum temperature, day of year, and previous day's flow. Better models coming soon.
             """
         ),
         html.Div(id='updated_dataframe', style={'display': 'none'}),
-
-        # dcc.Markdown(
-        #     """
-        #     -----------
-        #     """
-        # ),
-
-        # dcc.Markdown(
-        #     f"""
-        #     For development purposes. Last SF Payette forecast: {last_observation}
-        #     """
-        # ),
-        # dcc.Graph(
-        #     ),
-
-
-        # html.Div(children=[dcc.Graph(figure=fig)], style={"border":"2px black solid"})
-
-
     
     ]
 )
@@ -257,6 +227,18 @@ def create_time_series(df,title='Flow',x='date',y=['Observation','Forecast']):
                 layer="below",
                 line_width=0,
             ),
+            ## This line would make a present day line
+            ### But I can't figure it out right now
+            # dict(
+            #     type="line",
+            #     x0=current_MDT,
+            #     y0=0,
+            #     x1=current_MDT,
+            #     y1=max(np.nanmax(df[y[0]]),np.nanmax(df[y[1]])),
+            #     fillcolor="RoyalBlue",
+            #     line_width=3
+            # )
+            
         ]
     )
     
@@ -264,34 +246,7 @@ def create_time_series(df,title='Flow',x='date',y=['Observation','Forecast']):
 
     return fig
 
-#This doesn't work
-# @app.callback(
-#     dash.dependencies.Output('dataframe', 'children'),
-#     [dash.dependencies.Input('graph-update', 'n_intervals')]
-#     )  
-# def build_dataframe():
-#         ### testing connection to database
-#     DATABASE_URL = os.environ['DATABASE_URL']
-#     conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-#     sql = "select * from flow;"
-#     database_df = pd.read_sql_query(sql, conn)
-#     conn = None
-
-#     database_df = database_df.rename(columns={"observation":"Observation", "forecast":"Forecast"})
-#     database_df = database_df.drop(columns="id")
-#     # print(database_df)
-
-#     # CHANGE THIS LINE TO SEE THE NEW DATABASE DATA
-#     mapping_df = database_df
-
-#     mapping_df['date'] = pd.to_datetime(mapping_df['date'])
-
-#     return mapping_df.to_json()
-
-
-
-
-
+## This updates the dataframe being sent to the flow graph every 10 mins
 @app.callback(
         dash.dependencies.Output('updated_dataframe','children'),
         [dash.dependencies.Input('graph-update', 'n_intervals')]
@@ -312,25 +267,13 @@ def updateTable(n):
     return df.to_json(date_format='iso', orient='split')
 
 
-### Right now this updates on every single hover. This is def slowing it down. I'm sure there's a better way to update every 15 mins.
 @app.callback(
     dash.dependencies.Output('x-time-series', 'figure'),
     [dash.dependencies.Input('crossfilter-indicator-scatter', 'hoverData'),
     dash.dependencies.Input('updated_dataframe', 'children')
     ])
 def update_y_timeseries(hoverData='crossfilter-indicator-scatter',updated_df='updated_dataframe'):
-    # DATABASE_URL = os.environ['DATABASE_URL']
-    # conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-    # sql = "select * from flow;"
-    # database_df = pd.read_sql_query(sql, conn)
-    # conn = None
-
-    # database_df = database_df.rename(columns={"observation":"Observation", "forecast":"Forecast"})
-    # database_df = database_df.drop(columns="id")
-    # # CHANGE THIS LINE TO SEE THE NEW DATABASE DATA
-    # mapping_df = database_df
-    # mapping_df['date'] = pd.to_datetime(mapping_df['date'])
-    # # df = mapping_df
+    
     df = pd.read_json(updated_df, orient='split')
 
     city_name = hoverData['points'][0]['customdata']
@@ -340,56 +283,5 @@ def update_y_timeseries(hoverData='crossfilter-indicator-scatter',updated_df='up
     return create_time_series(df)
 
 
-    
-
-
-
-# DATABASE_URL = os.environ['DATABASE_URL']
-#     conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-#     sql = "select * from flow;"
-#     database_df = pd.read_sql_query(sql, conn)
-#     conn = None
-
-#     database_df = database_df.rename(columns={"observation":"Observation", "forecast":"Forecast"})
-#     database_df = database_df.drop(columns="id")
-#     # CHANGE THIS LINE TO SEE THE NEW DATABASE DATA
-#     mapping_df = database_df
-#     mapping_df['date'] = pd.to_datetime(mapping_df['date'])
-
-#     return mapping_df.to_dict()
-
-
-
-
-
-
-# @app.callback(
-#         dash.dependencies.Output('updated_dataframe','data'),
-#         [dash.dependencies.Input('graph-update', 'n_intervals')])
-# def updateTable(n):
-#     DATABASE_URL = os.environ['DATABASE_URL']
-#     conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-#     sql = "select * from flow;"
-#     database_df = pd.read_sql_query(sql, conn)
-#     conn = None
-
-#     database_df = database_df.rename(columns={"observation":"Observation", "forecast":"Forecast"})
-#     database_df = database_df.drop(columns="id")
-#     # CHANGE THIS LINE TO SEE THE NEW DATABASE DATA
-#     mapping_df = database_df
-#     mapping_df['date'] = pd.to_datetime(mapping_df['date'])
-
-#     return mapping_df.to_dict()
-
-
-
-
-
-# def create_map():
-#     pass
-
-
 
 layout = dbc.Row([column1])
-
-

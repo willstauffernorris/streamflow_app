@@ -11,6 +11,13 @@ from datetime import timedelta
 import os.path, time
 # import datetime
 
+
+## database imports
+import os
+import psycopg2
+import psycopg2.extras as extras
+
+
 # Imports from this application
 from app import app
 
@@ -155,7 +162,18 @@ def create_time_series(df,title='Flow',x='date',y=['Observation','Forecast']):
 
     return fig
 
-mapping_df = pd.read_csv("data/latest_flows.csv")
+# Connecting to database
+DATABASE_URL = os.environ['DATABASE_URL']
+conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+sql = "select * from flow;"
+database_df = pd.read_sql_query(sql, conn)
+conn = None
+
+database_df = database_df.rename(columns={"observation":"Observation", "forecast":"Forecast"})
+database_df = database_df.drop(columns="id")
+mapping_df = database_df
+mapping_df['date'] = pd.to_datetime(mapping_df['date'])
+
 
 payette_df = mapping_df[mapping_df['station']=='South Fork Payette at Lowman']
 
@@ -178,7 +196,7 @@ column1 = dbc.Col(
         
             # **How rivers.fyi works**
 
-            This website uses machine learning to predict a river's flow. Predictions are currently generated once per day.
+            This website uses machine learning to predict a river's flow. Predictions are currently generated once every 10 minutes.
 
             This very simple looking web app has a lot going on behind the scenes! Here are the steps I used to create rivers.fyi.
 
@@ -205,10 +223,13 @@ column1 = dbc.Col(
             These data are used as inputs to the LSTM neural network.
 
             ### Generate predictions
-            Right now, the predictions are generated once per day on my local computer. 
-            I tried to have predictions run on demand on my Heroku dyno, but after strugging mightily with deploying Tensorflow on Heroku, I realized that the 500MB of RAM allotted was only sufficient to run one day of neural network prediction.
-            So my current workaround is to run a local notebook, then manually upload a .csv with the predictions. This is obviously not sustainable for very long, so my next step is to spin up an AWS Lambda server and run the prediction function at regular intervals, then send the results to a database.
-
+            Predictions are generated once every 10 minutes using a one-off Heroku dyno.
+            I tried to have predictions run on demand on the same Heroku dyno the app is hosted on, but after strugging mightily with deploying Tensorflow on Heroku, I realized that the 500MB of RAM allotted was only sufficient to run one day of neural network prediction.
+            Using the one-off dyno allows a task to run at scheduled intervals, but not run constantly or every single time a user visits the site. 
+            
+            The data from the scheduled prediction generator are stored in a Heroku PostgreSQL database.
+            The app refreshes the displayed data every 10 minutes.
+            
             ### Display the data
             I used Plotly Dash to create a clean-looking data visualization.
             I really like navigating through data in a spatial way (huge mapping nerd), so I wrestled with various Plotly frameworks until I figured out how to display time series graphs by simply hovering over a point.

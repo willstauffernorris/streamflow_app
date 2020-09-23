@@ -105,8 +105,14 @@ column1 = dbc.Col(
         dcc.Graph(
             id='crossfilter-indicator-scatter',
             figure = fig,
+            # style={"border":"2px black solid", 'padding': 0},
             hoverData={'points': [{'customdata': 'South Fork Payette at Lowman'}]}),
-        dcc.Graph(id='x-time-series'),
+        dcc.Graph(id='x-time-series', style={"border":"1px black solid", 'padding': 0}),
+        dcc.Interval(
+            id='graph-update',
+            interval=(1*1000)*60*10, # in milliseconds 
+            n_intervals=0
+        ),
         # dcc.Graph(figure=map_fig, style={"border":"1px black solid", 'padding': 0}),
         # dcc.Graph(figure=fig, style={"border":"1px black solid", 'padding': 0}),
 
@@ -117,17 +123,17 @@ column1 = dbc.Col(
             """
         ),
 
-        dcc.Markdown(
-            """
-            -----------
-            """
-        ),
+        # dcc.Markdown(
+        #     """
+        #     -----------
+        #     """
+        # ),
 
-        dcc.Markdown(
-            f"""
-            For development purposes. Last SF Payette forecast: {last_observation}
-            """
-        ),
+        # dcc.Markdown(
+        #     f"""
+        #     For development purposes. Last SF Payette forecast: {last_observation}
+        #     """
+        # ),
         # dcc.Graph(
         #     ),
 
@@ -281,8 +287,21 @@ def create_time_series(df,title='Flow',x='date',y=['Observation','Forecast']):
 @app.callback(
     dash.dependencies.Output('x-time-series', 'figure'),
     [dash.dependencies.Input('crossfilter-indicator-scatter', 'hoverData'),
+    dash.dependencies.Input('graph-update', 'n_intervals')
     ])
-def update_y_timeseries(hoverData):
+def update_y_timeseries(hoverData, n):
+    DATABASE_URL = os.environ['DATABASE_URL']
+    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+    sql = "select * from flow;"
+    database_df = pd.read_sql_query(sql, conn)
+    conn = None
+
+    database_df = database_df.rename(columns={"observation":"Observation", "forecast":"Forecast"})
+    database_df = database_df.drop(columns="id")
+    # CHANGE THIS LINE TO SEE THE NEW DATABASE DATA
+    mapping_df = database_df
+    mapping_df['date'] = pd.to_datetime(mapping_df['date'])
+    
     df = mapping_df
 
     city_name = hoverData['points'][0]['customdata']
@@ -292,4 +311,26 @@ def update_y_timeseries(hoverData):
     return create_time_series(df)
 
 
+# @app.callback(
+#         dash.dependencies.Output('table','data'),
+#         [dash.dependencies.Input('graph-update', 'n_intervals')])
+# def updateTable(n):
+#     DATABASE_URL = os.environ['DATABASE_URL']
+#     conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+#     sql = "select * from flow;"
+#     database_df = pd.read_sql_query(sql, conn)
+#     conn = None
+
+#     database_df = database_df.rename(columns={"observation":"Observation", "forecast":"Forecast"})
+#     database_df = database_df.drop(columns="id")
+#     # CHANGE THIS LINE TO SEE THE NEW DATABASE DATA
+#     mapping_df = database_df
+#     mapping_df['date'] = pd.to_datetime(mapping_df['date'])
+
+#     return mapping_df
+
+
+
 layout = dbc.Row([column1])
+
+

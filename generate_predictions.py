@@ -97,7 +97,7 @@ def build_prev_flow_dataframe(river):
     for i in range(len(payload['value']['timeSeries'][0]['values'][0]['value'])):
         cfs = float(payload['value']['timeSeries'][0]['values'][0]['value'][i]['value'])
         date = payload['value']['timeSeries'][0]['values'][0]['value'][i]['dateTime']
-        # date = str(date)[:5]+"00:00"
+        date = str(date)[:-6]
         # date = pd.to_datetime(date)
         lat = river[2]
         lon = river[3]

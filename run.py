@@ -55,19 +55,7 @@ footer = dbc.Container(
 # dcc.Location: https://dash.plot.ly/dash-core-components/location
 # dbc.Container: https://dash-bootstrap-components.opensource.faculty.ai/l/components/layout
 
-# app.layout = html.Div([
-#     dcc.Location(id='url', refresh=False), 
-#     navbar, 
-#     dbc.Container(id='page-content', className='mt-4'), 
-#     html.Hr(), 
-#     footer
-# ])
-
-
-##live updates
-#changing layout to reload every time a page is reloaded
-def serve_layout():
-    return html.Div([
+app.layout = html.Div([
     dcc.Location(id='url', refresh=False), 
     navbar, 
     dbc.Container(id='page-content', className='mt-4'), 
@@ -75,7 +63,19 @@ def serve_layout():
     footer
 ])
 
-app.layout = serve_layout
+
+
+#changing layout to reload every time a page is reloaded
+# def serve_layout():
+#     return html.Div([
+#     dcc.Location(id='url', refresh=False), 
+#     navbar, 
+#     dbc.Container(id='page-content', className='mt-4'), 
+#     html.Hr(), 
+#     footer
+# ])
+
+# app.layout = serve_layout
 
 
 # URL Routing for Multi-Page Apps: https://dash.plot.ly/urls

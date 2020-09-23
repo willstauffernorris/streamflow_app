@@ -8,6 +8,7 @@ import plotly.express as px
 from datetime import datetime  
 from datetime import timedelta
 import numpy as np
+import json
 
 ## database imports
 import os
@@ -20,7 +21,7 @@ from app import app
 import os.path, time
 
 
-mapping_df = pd.read_csv("data/latest_flows.csv")
+# mapping_df = pd.read_csv("data/latest_flows.csv")
 # print("Last modified: %s" % time.ctime(os.path.getmtime("test.txt")))
 
 # dt=os.path.getmtime('data/latest_flows.csv')
@@ -45,27 +46,6 @@ mapping_df = database_df
 mapping_df['date'] = pd.to_datetime(mapping_df['date'])
 
 
-
-
-
-
-
-#### testing generated data#####
-# test_df = pd.read_csv("data/generated_latest_flows.csv")
-# test_dt=os.path.getmtime('data/generated_latest_flows.csv')
-# # print(datetime.fromtimestamp(dt))
-# test_utc_time = datetime.utcfromtimestamp(test_dt)
-# current_test_MDT = test_utc_time - timedelta(hours=6)
-# print(current_test_MDT)
-
-last_observation = "None!"
-if len(database_df) > 0:
-    last_observation = database_df['Forecast'].iloc[-1]
-
-#########
-
-
-
 ## create map fig##############
 fig = px.scatter_mapbox(mapping_df, lat="lat", lon="lon", hover_name="station", 
                         hover_data={"lat":False, "lon":False,"Observation":False,"Forecast":False},
@@ -87,8 +67,9 @@ fig.update_layout(
 # fig.update_layout(mapbox_style="outdoors")
 fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
 fig.update_traces(customdata=mapping_df['station'])
-#########
 
+#########
+    
 
 column1 = dbc.Col(
     [
@@ -101,7 +82,7 @@ column1 = dbc.Col(
             """
         ),
 
-
+        
         dcc.Graph(
             id='crossfilter-indicator-scatter',
             figure = fig,
@@ -110,7 +91,7 @@ column1 = dbc.Col(
         dcc.Graph(id='x-time-series', style={"border":"1px black solid", 'padding': 0}),
         dcc.Interval(
             id='graph-update',
-            interval=(1*1000)*60*10, # in milliseconds 
+            interval=(1*1000)*5, # in milliseconds 
             n_intervals=0
         ),
         # dcc.Graph(figure=map_fig, style={"border":"1px black solid", 'padding': 0}),
@@ -122,6 +103,7 @@ column1 = dbc.Col(
             **Note:** Forecasts only take into consideration the maximum and minimum temperature, day of year, and previous day's flow. Better models coming soon.
             """
         ),
+        html.Div(id='updated_dataframe', style={'display': 'none'}),
 
         # dcc.Markdown(
         #     """
@@ -282,14 +264,39 @@ def create_time_series(df,title='Flow',x='date',y=['Observation','Forecast']):
 
     return fig
 
+#This doesn't work
+# @app.callback(
+#     dash.dependencies.Output('dataframe', 'children'),
+#     [dash.dependencies.Input('graph-update', 'n_intervals')]
+#     )  
+# def build_dataframe():
+#         ### testing connection to database
+#     DATABASE_URL = os.environ['DATABASE_URL']
+#     conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+#     sql = "select * from flow;"
+#     database_df = pd.read_sql_query(sql, conn)
+#     conn = None
+
+#     database_df = database_df.rename(columns={"observation":"Observation", "forecast":"Forecast"})
+#     database_df = database_df.drop(columns="id")
+#     # print(database_df)
+
+#     # CHANGE THIS LINE TO SEE THE NEW DATABASE DATA
+#     mapping_df = database_df
+
+#     mapping_df['date'] = pd.to_datetime(mapping_df['date'])
+
+#     return mapping_df.to_json()
+
+
+
 
 
 @app.callback(
-    dash.dependencies.Output('x-time-series', 'figure'),
-    [dash.dependencies.Input('crossfilter-indicator-scatter', 'hoverData'),
-    dash.dependencies.Input('graph-update', 'n_intervals')
-    ])
-def update_y_timeseries(hoverData, n):
+        dash.dependencies.Output('updated_dataframe','children'),
+        [dash.dependencies.Input('graph-update', 'n_intervals')]
+        )
+def updateTable(n):
     DATABASE_URL = os.environ['DATABASE_URL']
     conn = psycopg2.connect(DATABASE_URL, sslmode='require')
     sql = "select * from flow;"
@@ -301,8 +308,30 @@ def update_y_timeseries(hoverData, n):
     # CHANGE THIS LINE TO SEE THE NEW DATABASE DATA
     mapping_df = database_df
     mapping_df['date'] = pd.to_datetime(mapping_df['date'])
-    
     df = mapping_df
+    return df.to_json(date_format='iso', orient='split')
+
+
+### Right now this updates on every single hover. This is def slowing it down. I'm sure there's a better way to update every 15 mins.
+@app.callback(
+    dash.dependencies.Output('x-time-series', 'figure'),
+    [dash.dependencies.Input('crossfilter-indicator-scatter', 'hoverData'),
+    dash.dependencies.Input('updated_dataframe', 'children')
+    ])
+def update_y_timeseries(hoverData='crossfilter-indicator-scatter',updated_df='updated_dataframe'):
+    # DATABASE_URL = os.environ['DATABASE_URL']
+    # conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+    # sql = "select * from flow;"
+    # database_df = pd.read_sql_query(sql, conn)
+    # conn = None
+
+    # database_df = database_df.rename(columns={"observation":"Observation", "forecast":"Forecast"})
+    # database_df = database_df.drop(columns="id")
+    # # CHANGE THIS LINE TO SEE THE NEW DATABASE DATA
+    # mapping_df = database_df
+    # mapping_df['date'] = pd.to_datetime(mapping_df['date'])
+    # # df = mapping_df
+    df = pd.read_json(updated_df, orient='split')
 
     city_name = hoverData['points'][0]['customdata']
 
@@ -311,8 +340,31 @@ def update_y_timeseries(hoverData, n):
     return create_time_series(df)
 
 
+    
+
+
+
+# DATABASE_URL = os.environ['DATABASE_URL']
+#     conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+#     sql = "select * from flow;"
+#     database_df = pd.read_sql_query(sql, conn)
+#     conn = None
+
+#     database_df = database_df.rename(columns={"observation":"Observation", "forecast":"Forecast"})
+#     database_df = database_df.drop(columns="id")
+#     # CHANGE THIS LINE TO SEE THE NEW DATABASE DATA
+#     mapping_df = database_df
+#     mapping_df['date'] = pd.to_datetime(mapping_df['date'])
+
+#     return mapping_df.to_dict()
+
+
+
+
+
+
 # @app.callback(
-#         dash.dependencies.Output('table','data'),
+#         dash.dependencies.Output('updated_dataframe','data'),
 #         [dash.dependencies.Input('graph-update', 'n_intervals')])
 # def updateTable(n):
 #     DATABASE_URL = os.environ['DATABASE_URL']
@@ -327,7 +379,14 @@ def update_y_timeseries(hoverData, n):
 #     mapping_df = database_df
 #     mapping_df['date'] = pd.to_datetime(mapping_df['date'])
 
-#     return mapping_df
+#     return mapping_df.to_dict()
+
+
+
+
+
+# def create_map():
+#     pass
 
 
 

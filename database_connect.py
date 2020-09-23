@@ -5,13 +5,11 @@ import pandas as pd
 # from dotenv import load_dotenv
 
 
-DATABASE_URL = 'postgres://oduypdxqcwjvgk:035fbda61502204299dfc3dda37746bca2a09b79c13781fba551fb7d49a9e71d@ec2-3-218-112-22.compute-1.amazonaws.com:5432/dbnanadb6uicbk'
-
 
 df = pd.read_csv("data/generated_latest_flows.csv", index_col=0)
 print(df)
 
-# DATABASE_URL = DATABASE_URL
+DATABASE_URL = os.environ['DATABASE_URL']
 conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 
 #####create my 'flow' table######

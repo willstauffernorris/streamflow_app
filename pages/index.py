@@ -23,13 +23,13 @@ import os.path, time
 mapping_df = pd.read_csv("data/latest_flows.csv")
 # print("Last modified: %s" % time.ctime(os.path.getmtime("test.txt")))
 
-dt=os.path.getmtime('data/latest_flows.csv')
-utc_time = datetime.utcfromtimestamp(dt)
-current_MDT = utc_time - timedelta(hours=6)
+# dt=os.path.getmtime('data/latest_flows.csv')
+# utc_time = datetime.utcfromtimestamp(dt)
+current_MDT = datetime.utcnow() - timedelta(hours=6)
 
 
 ### testing connection to database
-DATABASE_URL = 'postgres://oduypdxqcwjvgk:035fbda61502204299dfc3dda37746bca2a09b79c13781fba551fb7d49a9e71d@ec2-3-218-112-22.compute-1.amazonaws.com:5432/dbnanadb6uicbk'
+DATABASE_URL = os.environ['DATABASE_URL']
 conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 sql = "select * from flow;"
 database_df = pd.read_sql_query(sql, conn)
@@ -40,7 +40,7 @@ database_df = database_df.drop(columns="id")
 # print(database_df)
 
 # CHANGE THIS LINE TO SEE THE NEW DATABASE DATA
-# mapping_df = database_df
+mapping_df = database_df
 
 mapping_df['date'] = pd.to_datetime(mapping_df['date'])
 
@@ -219,11 +219,11 @@ def create_time_series(df,title='Flow',x='date',y=['Observation','Forecast']):
 
 
     fig.add_annotation(
-                x=datetime.now() + timedelta(days=1.5),
+                x=current_MDT + timedelta(days=1.5),
                 y=min(min(df[y[0]]),min(df[y[1]]))*.5,
                 text="1-3 Day <br> Forecast")
     fig.add_annotation(
-                x=datetime.now() + timedelta(days=4.5),
+                x=current_MDT + timedelta(days=4.5),
                 y=min(min(df[y[0]]),min(df[y[1]]))*.5,
                 text="4-7 Day <br> Forecast")
     fig.update_annotations(dict(

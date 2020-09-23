@@ -98,7 +98,7 @@ def build_prev_flow_dataframe(river):
         cfs = float(payload['value']['timeSeries'][0]['values'][0]['value'][i]['value'])
         date = payload['value']['timeSeries'][0]['values'][0]['value'][i]['dateTime']
         # date = str(date)[:5]+"00:00"
-        date = pd.to_datetime(date)
+        # date = pd.to_datetime(date)
         lat = river[2]
         lon = river[3]
         station = river[4]
@@ -119,6 +119,7 @@ def get_weather_forecast(weather_gov_api_url):
     '''
 
     response = requests.get(weather_gov_api_url)
+    print(response)
     payload = response.json()
     
     # building two empty dataframes
@@ -268,11 +269,13 @@ for river in river_dict:
 
   ## all USGS data for the last 10 days
   prev_flow_df = build_prev_flow_dataframe(river_dict[river])
-
+#   print(prev_flow_df.tail(20))
+#   exit()
   ## flow at time of data import
   current_flow = prev_flow_df['Observation'].iloc[-1]
 
   # future flows
+  ## uncomment this out for future flows- weather.gov API isn't working
   forecast_flow_df = build_LSTM_7Day_forecast(river_dict[river], current_flow)
 
   ## Big dataframe that puts all the information together
@@ -282,10 +285,7 @@ for river in river_dict:
 print(mapping_flow_df.tail(10))
 
 # mapping_flow_df.to_csv('data/generated_latest_flows.csv')
-
-DATABASE_URL = 'postgres://oduypdxqcwjvgk:035fbda61502204299dfc3dda37746bca2a09b79c13781fba551fb7d49a9e71d@ec2-3-218-112-22.compute-1.amazonaws.com:5432/dbnanadb6uicbk'
-
-
+DATABASE_URL = os.environ['DATABASE_URL']
 conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 
 def delete_existing_and_execute_values(conn, df, table):

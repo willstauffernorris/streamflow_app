@@ -56,3 +56,33 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets, meta_tags=m
 app.config.suppress_callback_exceptions = True # see https://dash.plot.ly/urls
 app.title = 'rivers.fyi | flow forecast' # appears in browser title bar
 server = app.server
+
+
+app.index_string = '''<!DOCTYPE html>
+<html>
+<head>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    
+    ga('create', 'UA-38349647-2', 'auto');
+    ga('send', 'pageview');
+    </script>
+  <!-- End Global Google Analytics -->
+{%metas%}
+<title>{%title%}</title>
+{%favicon%}
+{%css%}
+</head>
+<body>
+{%app_entry%}
+<footer>
+{%config%}
+{%scripts%}
+{%renderer%}
+</footer>
+</body>
+</html>
+'''

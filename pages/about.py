@@ -179,12 +179,12 @@ payette_df = mapping_df[mapping_df['station']=='South Fork Payette at Lowman']
 
 fig = create_time_series(payette_df,title='South Fork Payette at Lowman')
 
-dt=os.path.getmtime('data/latest_flows.csv')
-# print(datetime.fromtimestamp(dt))
-utc_time = datetime.utcfromtimestamp(dt)
+# dt=os.path.getmtime('data/latest_flows.csv')
+# # print(datetime.fromtimestamp(dt))
+# utc_time = datetime.utcfromtimestamp(dt)
 
-current_MDT = utc_time - timedelta(hours=6)
-
+# current_MDT = utc_time - timedelta(hours=6)
+current_MDT = datetime.utcnow() - timedelta(hours=6)
 # print(current_MDT)
 
 # 1 column layout
@@ -269,31 +269,25 @@ column1 = dbc.Col(
 
             """
         ),
-
-        dcc.Markdown(
-            """
         
-            ### Comparing Models
-            It's helpful to gut-check my model against the current public standard, the NOAA forecast center models.
-            Below you can see the two plots compared.
 
-            ### This is the model that I created from a neural nework 👇
-            """
-        ), 
+        # dcc.Graph(figure=fig, style={"border":"1px black solid", 'padding': 0, 'width':700}),
 
-        dcc.Graph(figure=fig, style={"border":"1px black solid", 'padding': 0, 'width':700}),
+        # dcc.Markdown(
+        #     f"""
 
-        dcc.Markdown(
-            f"""
-            Forecast created: {str(current_MDT)[:-3]} MDT. \n
+        
 
-            ### And this is the Northwest River Forecast Center model 👇
 
-            """
-        ),     
+        #     Forecast created: {str(current_MDT)[:-3]} MDT. \n
 
-        ## This is the live link
-        html.Img(src='https://www.nwrfc.noaa.gov/station/flowplot/hydroPlot.php?id=PRLI1&pe=HG&v=1599087455/hydroPlot.png', className='img-fluid'),
+        #     ### And this is the Northwest River Forecast Center model 👇
+
+        #     """
+        # ),     
+
+        # ## This is the live link
+        # html.Img(src='https://www.nwrfc.noaa.gov/station/flowplot/hydroPlot.php?id=PRLI1&pe=HG&v=1599087455/hydroPlot.png', className='img-fluid'),
     
         dcc.Markdown(
             f"""
@@ -309,10 +303,40 @@ column1 = dbc.Col(
     ],
 )
 
+column2 = dbc.Col(
+    [
+
+        # dcc.Graph(figure=map_fig, style={"border":"1px black solid", 'padding': 0}),
+        # dcc.Graph(figure=fig, style={"border":"1px black solid", 'padding': 0}),
+        html.Img(src='assets/architecture.png', width = 700, className='img-fluid'),
+        dcc.Markdown(
+            """
+            ----
+            """
+        ),
+        dcc.Markdown(
+            """
+        
+            ### Comparing Models
+            It's helpful to gut-check my model against the current public standard, the NOAA forecast center models.
+            Below you can see the two plots compared.
+           
+            ### This is the model that I created from a neural network 👇
+            
+            """
+        ), 
+
+        html.Img(src='assets/noaa_model_comparison.png', width = 700, className='img-fluid'),
+       
+
+        
+    ]
+)
 
 
 
 
 
 
-layout = dbc.Row([column1])
+# layout = dbc.Row([column1])
+layout = dbc.Row([column1, column2])

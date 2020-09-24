@@ -9,6 +9,7 @@ from datetime import datetime
 from datetime import timedelta
 import numpy as np
 import json
+import os.path, time
 
 ## database imports
 import os
@@ -18,9 +19,6 @@ import psycopg2.extras as extras
 # Imports from this application
 from app import app
 
-import os.path, time
-
-current_MDT = datetime.utcnow() - timedelta(hours=6)
 
 # Connecting to database
 DATABASE_URL = os.environ['DATABASE_URL']
@@ -69,9 +67,7 @@ column1 = dbc.Col(
             **Hover over a gauge to see its past and predicted flow. Double click to reset the map.**
             
             """
-        ),
-
-        
+        ),   
         dcc.Graph(
             id='crossfilter-indicator-scatter',
             figure = fig,
@@ -82,13 +78,9 @@ column1 = dbc.Col(
             id='graph-update',
             interval=(1*1000)*60*10, # in milliseconds (every 10 mins now)
             n_intervals=0
-        ),
-        # dcc.Graph(figure=map_fig, style={"border":"1px black solid", 'padding': 0}),
-        # dcc.Graph(figure=fig, style={"border":"1px black solid", 'padding': 0}),
-        # Forecast created: {str(current_MDT)[:-3]} MDT. \n
+        ),    
         dcc.Markdown(
             f"""
-            
             **Note:** Forecasts only take into consideration the maximum and minimum temperature, day of year, and previous day's flow. Better models coming soon.
             """
         ),
@@ -97,8 +89,7 @@ column1 = dbc.Col(
     ]
 )
 
-
-def create_time_series(df,title='Flow',x='date',y=['Observation','Forecast']):
+def create_time_series(df,current_MDT,title='Flow',x='date',y=['Observation','Forecast'], ):
 
     fig = px.scatter(df, x=x, y=y)
     fig = px.line(
@@ -260,28 +251,22 @@ def updateTable(n):
 
     database_df = database_df.rename(columns={"observation":"Observation", "forecast":"Forecast"})
     database_df = database_df.drop(columns="id")
-    # CHANGE THIS LINE TO SEE THE NEW DATABASE DATA
     mapping_df = database_df
     mapping_df['date'] = pd.to_datetime(mapping_df['date'])
     df = mapping_df
     return df.to_json(date_format='iso', orient='split')
 
-
 @app.callback(
     dash.dependencies.Output('x-time-series', 'figure'),
     [dash.dependencies.Input('crossfilter-indicator-scatter', 'hoverData'),
-    dash.dependencies.Input('updated_dataframe', 'children')
+    dash.dependencies.Input('updated_dataframe', 'children'),
     ])
 def update_y_timeseries(hoverData='crossfilter-indicator-scatter',updated_df='updated_dataframe'):
     
     df = pd.read_json(updated_df, orient='split')
-
     city_name = hoverData['points'][0]['customdata']
-
     df = df[df['station']== city_name]
- 
-    return create_time_series(df)
-
-
+    current_MDT = datetime.utcnow() - timedelta(hours=6)
+    return create_time_series(df, current_MDT)
 
 layout = dbc.Row([column1])

@@ -196,7 +196,7 @@ column1 = dbc.Col(
         
             # **How rivers.fyi works**
 
-            This website uses machine learning to predict a river's flow. Predictions are currently generated once every 10 minutes.
+            This website uses machine learning to predict a river's flow. Predictions are currently generated once every hour.
 
             This very simple looking web app has a lot going on behind the scenes! Here are the steps I used to create rivers.fyi.
 

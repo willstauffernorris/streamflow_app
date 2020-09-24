@@ -76,7 +76,7 @@ column1 = dbc.Col(
         dcc.Graph(id='x-time-series', style={"border":"1px black solid", 'padding': 0}),
         dcc.Interval(
             id='graph-update',
-            interval=(1*1000)*60*10, # in milliseconds (every 10 mins now)
+            interval=(1*1000)*60*60, # in milliseconds (every hour now)
             n_intervals=0
         ),    
         dcc.Markdown(
